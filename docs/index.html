@@ -4,20 +4,165 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#124d3b">
-  <meta name="description" content="InstiQuote AI 校園採購工作台：發佈需求、收集報價、輕鬆比較。可交互演示原型。">
-  <title>InstiQuote AI · 校園採購工作台</title>
-  <link rel="stylesheet" href="./styles.css?v=3">
-  <script defer src="./model.js?v=3"></script>
-  <script defer src="./locale.js?v=3"></script>
-  <script defer src="./whatsapp.js?v=3"></script>
-  <script defer src="./whatsapp-ui.js?v=3"></script>
-  <script defer src="./access.js?v=3"></script>
-  <script defer src="./access-ui.js?v=3"></script>
-  <script defer src="./app.js?v=3"></script>
+  <meta name="description" content="認識 InstiQuote AI：為香港校園而設計的詢價配對平台，讓需求、獨立報價與跟進流程更有條理。探索公司理念及四種角色的互動原型。">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="zh_HK">
+  <meta property="og:title" content="InstiQuote AI · 讓校園採購，更從容">
+  <meta property="og:description" content="從老師的日常出發，整理需求、報價與跟進流程。了解平台理念，並體驗校園詢價配對的互動原型。">
+  <title>InstiQuote AI · 讓校園採購，更從容</title>
+  <link rel="stylesheet" href="./home.css?v=4">
+  <script defer src="./home.js?v=4"></script>
 </head>
 <body>
-  <div id="app"></div>
-  <div id="modal-root"></div>
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <a class="skip-link" href="#main">跳至主要內容</a>
+  <svg class="icon-definitions" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="0" height="0">
+    <defs>
+      <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 3h6a4 4 0 0 1 4 4v14a5 5 0 0 0-4-2H4z"/><path d="M14 7a4 4 0 0 1 4-4h2v16h-2a5 5 0 0 0-4 2"/><path d="M7 7h3M7 11h3"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><path d="m8 12 3 3 5-6"/></symbol>
+      <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H5v18h14V8zM14 3v5h5M8 12h8M8 16h6"/></symbol>
+      <symbol id="i-people" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 5a3 3 0 0 1 0 6M18 15a5 5 0 0 1 3 5v1"/></symbol>
+      <symbol id="i-building" viewBox="0 0 24 24"><path d="M4 21V7l8-4 8 4v14M2 21h20M10 21v-5h4v5M8 9h1M15 9h1M8 12h1M15 12h1"/></symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+      <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
+      <symbol id="i-message" viewBox="0 0 24 24"><path d="M21 11a8 8 0 0 1-8 8H7l-4 3V11a9 9 0 0 1 18 0Z"/><path d="M7 10h10M7 14h6"/></symbol>
+      <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></symbol>
+      <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5z"/></symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+    </defs>
+  </svg>
+
+  <header class="site-header">
+    <div class="site-header-inner container">
+      <a class="site-brand" href="./index.html" aria-label="InstiQuote AI 官網首頁">
+        <span class="site-brand-mark"><svg aria-hidden="true"><use href="#i-book"/></svg></span>
+        <span><span class="site-brand-name">InstiQuote <span>AI</span></span><span class="site-brand-tag">讓校園採購，更從容</span></span>
+      </a>
+      <button class="nav-toggle" type="button" aria-label="開啟導覽選單" aria-expanded="false" aria-controls="site-nav"><svg aria-hidden="true"><use href="#i-menu"/></svg></button>
+      <nav class="site-nav" id="site-nav" aria-label="主要導覽">
+        <a href="#about">關於我們</a>
+        <a href="#flow">運作流程</a>
+        <a href="#features">設計理念</a>
+        <a href="#faq">常見問題</a>
+        <a class="button primary small" href="./workspace.html">進入平台</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero container" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <div class="eyebrow">FOR HONG KONG SCHOOLS <span class="prototype-badge">互動原型</span></div>
+        <h1 class="hero-title" id="hero-title">讓老師專注教學，<br>讓採購<span>更有條理。</span></h1>
+        <p class="hero-description">從一份清楚的需求，到可以安心比較的方案。<br class="desktop-break">我們把校園詢價的來回溝通，整理成更從容的流程。</p>
+        <div class="hero-actions">
+          <a class="button primary" href="./workspace.html?role=teacher">體驗老師工作台</a>
+          <a class="button secondary" href="#about">了解我們</a>
+        </div>
+        <div class="hero-assurance"><span><svg aria-hidden="true"><use href="#i-check"/></svg>需求清晰</span><span><svg aria-hidden="true"><use href="#i-check"/></svg>按階段保護資料</span><span><svg aria-hidden="true"><use href="#i-check"/></svg>方案獨立比較</span></div>
+      </div>
+      <div class="hero-visual">
+        <div class="hero-orbit" aria-hidden="true"></div>
+        <div class="preview-floating floating-top"><svg aria-hidden="true"><use href="#i-shield"/></svg><span>先看方案，再作選擇</span></div>
+        <div class="preview-shell">
+          <div class="preview-topbar"><span class="preview-brand"><svg aria-hidden="true"><use href="#i-book"/></svg>InstiQuote AI</span><span class="preview-demo-label">平台示意</span></div>
+          <div class="preview-tabs" role="tablist" aria-label="平台示意角色">
+            <button class="preview-tab active" id="tab-teacher" type="button" role="tab" aria-selected="true" aria-controls="preview-teacher" data-preview="teacher">老師的視角</button>
+            <button class="preview-tab" id="tab-supplier" type="button" role="tab" aria-selected="false" aria-controls="preview-supplier" tabindex="-1" data-preview="supplier">供應商的視角</button>
+          </div>
+          <div class="preview-panel" id="preview-teacher" role="tabpanel" aria-labelledby="tab-teacher" tabindex="0">
+            <div class="preview-request"><div><span class="preview-category">到校課程</span><span class="preview-status">收集中</span></div><h2 class="preview-title">小四 STEM 創意科學工作坊</h2><p class="preview-meta">半天體驗 <span>·</span> 60 位學生 <span>·</span> 材料及導師</p></div>
+            <div class="preview-quote-list">
+              <div class="preview-quote selected"><span class="preview-check"><svg aria-hidden="true"><use href="#i-check"/></svg></span><div><span class="preview-quote-label">供應商 A</span><p class="preview-quote-caption">包含課程設計、導師與材料</p></div><strong class="preview-price">HK$14,800</strong></div>
+              <div class="preview-quote"><span class="preview-check"><svg aria-hidden="true"><use href="#i-file"/></svg></span><div><span class="preview-quote-label">供應商 B</span><p class="preview-quote-caption">包含分組教學與學習單</p></div><strong class="preview-price">HK$16,200</strong></div>
+            </div>
+            <p class="preview-footnote">需求、金額及狀態均為演示資料。</p>
+            <a class="preview-link" href="./workspace.html?role=teacher">在老師工作台體驗完整流程</a>
+          </div>
+          <div class="preview-panel" id="preview-supplier" role="tabpanel" aria-labelledby="tab-supplier" tabindex="0" hidden>
+            <div class="preview-request"><span class="preview-category">需求邀請</span><h2 class="preview-title">讓合適的需求，找到您的專長。</h2><p class="preview-meta">清楚的需求資訊 <span>·</span> 獨立準備方案</p></div>
+            <div class="preview-supplier-list">
+              <div class="preview-supplier-row"><span class="preview-supplier-icon"><svg aria-hidden="true"><use href="#i-spark"/></svg></span><div><strong>到校科學體驗課程</strong><span>九龍城區 · 課程及材料</span></div><span class="preview-status">待接單</span></div>
+              <div class="preview-supplier-row"><span class="preview-supplier-icon"><svg aria-hidden="true"><use href="#i-people"/></svg></span><div><strong>校園開放日互動活動</strong><span>沙田區 · 活動及人員</span></div><span class="preview-status">待報價</span></div>
+            </div>
+            <p class="preview-footnote">需求、金額及狀態均為演示資料。</p>
+            <a class="preview-link" href="./workspace.html?role=supplier">在供應商工作台體驗完整流程</a>
+          </div>
+        </div>
+        <div class="preview-floating floating-bottom"><span class="floating-check"><svg aria-hidden="true"><use href="#i-check"/></svg></span><span>每一步，都清楚看見。</span></div>
+      </div>
+    </section>
+
+    <section class="section about-section" id="about" aria-labelledby="about-title">
+      <div class="container">
+        <p class="eyebrow">ABOUT INSTIQUOTE AI</p>
+        <div class="about-grid">
+          <p class="about-kicker">少一點來回，<br>多一點教學時間。</p>
+          <div class="about-copy"><h2 class="section-title" id="about-title">從老師的日常出發，<br>重新整理詢價這件事。</h2><p>InstiQuote AI 是一個面向香港學校與服務供應商的平台構想。我們從老師日常的行政工作出發，將需求整理、供應商回應、方案比較與跟進紀錄，放進同一個工作空間。</p><p>我們希望科技先做好協調，讓老師更從容地作決定，也讓供應商以清楚的服務內容參與。平台現階段以互動原型展示流程，正式營運安排仍在規劃。</p></div>
+        </div>
+        <div class="about-principles">
+          <div class="principle-line"><span class="principle-symbol"><svg aria-hidden="true"><use href="#i-file"/></svg></span><div><strong>需求說清楚</strong><span>讓每個方案有一致的起點</span></div></div>
+          <div class="principle-line"><span class="principle-symbol"><svg aria-hidden="true"><use href="#i-grid"/></svg></span><div><strong>資訊有條理</strong><span>讓比較與跟進更容易理解</span></div></div>
+          <div class="principle-line"><span class="principle-symbol"><svg aria-hidden="true"><use href="#i-check"/></svg></span><div><strong>選擇由您作</strong><span>把專業判斷留給學校</span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section audience-section" aria-labelledby="audience-title">
+      <div class="container">
+        <div class="section-heading"><p class="eyebrow">TWO SIDES. ONE CLEARER PROCESS.</p><h2 class="section-title" id="audience-title">讓需要與專長，<br>有一個清楚相遇的地方。</h2></div>
+        <div class="audience-grid">
+          <article class="audience-story"><span class="story-icon"><svg aria-hidden="true"><use href="#i-book"/></svg></span><p class="story-kicker">給老師與學校</p><h3 class="story-title">每一個好選擇，<br>都從清楚的需求開始。</h3><p>把服務內容、日期及需要整理好，在同一處查看回應與方案，減少分散在不同對話中的資訊。</p><ul class="story-points"><li>用簡單步驟整理需求</li><li>分開追蹤接單與實際報價</li><li>比較方案，再決定跟進對象</li></ul><a class="story-link" href="./workspace.html?role=teacher">探索老師工作台</a></article>
+          <article class="audience-story supplier-story"><span class="story-icon"><svg aria-hidden="true"><use href="#i-building"/></svg></span><p class="story-kicker">給服務供應商</p><h3 class="story-title">讓您的服務內容，<br>被好好看見。</h3><p>以一致的需求資訊準備獨立方案，在工作台查看邀請、提交報價，並清楚掌握跟進進度。</p><ul class="story-points"><li>查看與服務類別相關的邀請</li><li>在同一處管理報價及期限</li><li>公司與聯絡帳號分開管理</li></ul><a class="story-link" href="./workspace.html?role=supplier">探索供應商工作台</a></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section workflow-section" id="flow" aria-labelledby="flow-title">
+      <div class="container"><div class="section-heading"><p class="eyebrow">A CLEARER WAY TO QUOTE</p><h2 class="section-title" id="flow-title">把流程整理好，<br>每一步都更從容。</h2><p class="section-description">原型展示從需求到方案選擇的基本路徑。<br>真實採購仍須按學校適用程序進行。</p></div>
+        <div class="workflow-grid">
+          <article class="workflow-step"><span class="workflow-icon"><svg aria-hidden="true"><use href="#i-file"/></svg></span><p class="workflow-label">01 · 整理需求</p><h3>先把需要說清楚</h3><p class="workflow-copy">列明服務類別、內容、日期及參考預算，為供應商提供一致的需求資訊。</p></article>
+          <article class="workflow-step"><span class="workflow-icon"><svg aria-hidden="true"><use href="#i-message"/></svg></span><p class="workflow-label">02 · 收集方案</p><h3>回應與進度放在一起</h3><p class="workflow-copy">供應商確認接單後獨立準備報價，老師可以查看收集進度和平台內的需求問答。</p></article>
+          <article class="workflow-step"><span class="workflow-icon"><svg aria-hidden="true"><use href="#i-grid"/></svg></span><p class="workflow-label">03 · 比較與跟進</p><h3>看清方案，再作選擇</h3><p class="workflow-copy">比較現有報價，選定後查看聯絡資料，再由學校按自身程序確認後續安排。</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section trust-section" id="features" aria-labelledby="features-title">
+      <div class="container trust-grid">
+        <div class="trust-copy"><p class="eyebrow">THOUGHTFUL BY DESIGN</p><h2 class="section-title" id="features-title">保留私隱，<br>也保留必要的紀錄。</h2><p class="section-description">我們以資料分階段發放、角色分工及過程可追蹤，作為平台的設計方向。</p>
+          <div class="trust-list"><div class="trust-item"><span class="trust-item-icon"><svg aria-hidden="true"><use href="#i-shield"/></svg></span><div><h3>按階段展示資訊</h3><p>初期需求與報價以匿名方式展示，選定後才解鎖供應商聯絡資料。</p></div></div><div class="trust-item"><span class="trust-item-icon"><svg aria-hidden="true"><use href="#i-people"/></svg></span><div><h3>不同職責，不同工作台</h3><p>老師、供應商、管理員及總後台有各自入口，原型可體驗不同的角色與操作權限。</p></div></div><div class="trust-item"><span class="trust-item-icon"><svg aria-hidden="true"><use href="#i-clock"/></svg></span><div><h3>讓過程可以回看</h3><p>保留需求進度、報價、通知與帳號異動的演示紀錄，方便理解每一步的來龍去脈。</p></div></div></div>
+        </div>
+        <div class="trust-art"><div class="trust-art-outline" aria-hidden="true"></div><div class="trust-document"><div class="trust-document-top"><svg aria-hidden="true"><use href="#i-book"/></svg><span>InstiQuote AI</span><span class="trust-document-label">需求示意</span></div><h3>讓重要的資訊，<br>在合適的時候出現。</h3><div class="trust-row"><span>學校及老師聯絡資料</span><span class="trust-hidden"><svg aria-hidden="true"><use href="#i-lock"/></svg>初期隱藏</span></div><div class="trust-row"><span>服務類別與需求</span><svg aria-label="可查看" role="img"><use href="#i-check"/></svg></div><div class="trust-row"><span>供應商獨立方案</span><svg aria-label="可查看" role="img"><use href="#i-check"/></svg></div><div class="trust-row"><span>獲選供應商聯絡資料</span><span class="trust-hidden">選定後查看</span></div><p class="trust-document-footer">以合適的資訊，支持更清楚的決定。</p></div><span class="trust-lock" aria-hidden="true"><svg><use href="#i-lock"/></svg></span></div>
+      </div>
+    </section>
+
+    <section class="section entry-section" id="platform" aria-labelledby="platform-title">
+      <div class="container"><div class="entry-header"><div><p class="eyebrow">EXPLORE THE PROTOTYPE</p><h2 class="section-title" id="platform-title">找到您的工作台。</h2></div><p class="section-description">選一個角色，體驗同一流程中的不同視角。<br>以下均為演示入口。</p></div>
+        <div class="entry-grid">
+          <a class="entry-card" href="./workspace.html?role=teacher"><span class="entry-icon"><svg aria-hidden="true"><use href="#i-book"/></svg></span><div class="entry-copy"><h3>老師工作台</h3><p>整理需求、查看進度及比較方案。</p></div><span class="entry-tag">老師</span></a>
+          <a class="entry-card" href="./workspace.html?role=supplier"><span class="entry-icon"><svg aria-hidden="true"><use href="#i-building"/></svg></span><div class="entry-copy"><h3>供應商工作台</h3><p>查看邀請、接單及提交報價。</p></div><span class="entry-tag">供應商</span></a>
+          <a class="entry-card" href="./workspace.html?role=admin"><span class="entry-icon"><svg aria-hidden="true"><use href="#i-grid"/></svg></span><div class="entry-copy"><h3>管理員端</h3><p>跟進需求、審核供應商及通知。</p></div><span class="entry-tag">營運</span></a>
+          <a class="entry-card" href="./workspace.html?role=superadmin"><span class="entry-icon"><svg aria-hidden="true"><use href="#i-shield"/></svg></span><div class="entry-copy"><h3>總後台端</h3><p>管理帳號、角色權限及操作紀錄。</p></div><span class="entry-tag">管理</span></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section faq-section" id="faq" aria-labelledby="faq-title">
+      <div class="container faq-grid"><div><p class="eyebrow">A FEW THINGS TO KNOW</p><h2 class="section-title" id="faq-title">先了解，<br>再開始體驗。</h2><p class="section-description">關於平台定位與目前原型，<br>這裡有幾個實用答案。</p></div>
+        <div class="faq-list">
+          <details class="faq-item" open><summary class="faq-question">現在可以直接處理真實採購嗎？</summary><div class="faq-answer"><p>目前網站是可操作的互動原型，用來驗證需求、報價、帳號及通知流程。資料僅保存在當前瀏覽器，尚未接入正式登入、共用資料庫或真實文件傳輸。請使用模擬資料體驗。</p></div></details>
+          <details class="faq-item"><summary class="faq-question">老師和供應商需要下載 App 嗎？</summary><div class="faq-answer"><p>不用。原型採用響應式網頁設計，可以在電腦及手機瀏覽器開啟；從上方「進入平台」或角色入口即可體驗。</p></div></details>
+          <details class="faq-item"><summary class="faq-question">收集到報價，是否等同完成學校採購？</summary><div class="faq-answer"><p>不等同。平台原型展示的是前期詢價及配對流程。正式採購、審批及文件保存，仍須由學校按適用規定與校本程序處理，不能單憑報價數量判定已完成程序。</p></div></details>
+          <details class="faq-item"><summary class="faq-question">AI 和 WhatsApp 已正式接通嗎？</summary><div class="faq-answer"><p>目前相關功能仍為原型或規劃內容。WhatsApp 通知中心可以體驗範本、預覽、模擬發送及重試，但不會聯絡真實電話；AI 文件處理亦尚未接入正式服務。</p></div></details>
+          <details class="faq-item"><summary class="faq-question">如何體驗不同角色及帳號權限？</summary><div class="faq-answer"><p>在「找到您的工作台」選擇角色，或在工作台上方切換老師、供應商、管理員與總後台。帳號選單可選擇不同演示使用者，查看相應頁面及操作限制。</p><a href="#platform">查看工作台入口</a></div></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="closing-section"><div class="container closing-inner"><div class="closing-copy"><p class="eyebrow">START WITH A CLEARER REQUEST</p><h2>從一份清楚的需求開始。</h2><p>看看更有條理的校園詢價，會是甚麼樣子。</p></div><div class="closing-actions"><a class="button light" href="./workspace.html?role=teacher">開始體驗</a><a class="button dark" href="#platform">選擇其他工作台</a></div></div></section>
+  </main>
+
+  <footer class="site-footer"><div class="container"><div class="footer-main"><a class="site-brand" href="./index.html" aria-label="InstiQuote AI 官網首頁"><span class="site-brand-mark"><svg aria-hidden="true"><use href="#i-book"/></svg></span><span><span class="site-brand-name">InstiQuote <span>AI</span></span><span class="site-brand-tag">讓校園採購，更從容</span></span></a><nav class="footer-links" aria-label="頁尾導覽"><a href="#about">關於我們</a><a href="#flow">運作流程</a><a href="#faq">常見問題</a><a href="./workspace.html">進入平台</a></nav></div><div class="footer-bottom"><p>© <span id="copyright-year">2026</span> InstiQuote AI</p><p>品牌介紹及平台流程原型 · 請使用模擬資料體驗</p><a href="#main">返回頁首</a></div></div></footer>
 </body>
 </html>
