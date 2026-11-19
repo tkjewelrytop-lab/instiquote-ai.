@@ -1,0 +1,15 @@
+node_modules/
+.openai/
+outputs/
+qa/
+tmp/
+.localcache/
+localcache/
+.cache/
+.env
+.env.*
+*.log
+*.tar.gz
+*.zip
+.DS_Store
+Thumbs.db
