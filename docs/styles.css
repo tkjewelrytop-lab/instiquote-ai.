@@ -890,3 +890,72 @@ fieldset.permission-group { padding: 0; margin: 0; }
   .session-identity .select, .session-identity select { flex-basis: 100%; width: 100%; }
   .access-quicklinks { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Staged collection, quote review and teacher conversations. */
+.preserve-lines { white-space: pre-wrap; overflow-wrap: anywhere; }
+.workflow-result { display:flex; justify-content:space-between; gap:24px; align-items:center; background:#eef5ef; border:1px solid #dbe8dc; padding:23px; border-radius:12px; margin-bottom:24px; }
+.workflow-result h3 { margin:5px 0 7px; font-size:21px; line-height:1.5; color:#174e3b; }
+.workflow-result p { margin:0; color:#567162; font-size:16px; line-height:1.8; }
+.workflow-result>strong { font-size:34px; color:#174e3b; flex-shrink:0; }
+.workflow-result>strong span { display:block; font-size:14px; color:#60766a; font-weight:500; }
+.workflow-result.is-cancelled { background:#fff4f2; border-color:#eed4d0; }
+.workflow-result.is-cancelled h3 { color:#9a4339; }
+.workflow-actions { display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:8px; }
+.workflow-quote-footer { display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; }
+.quote-contact { padding:15px 17px; background:#f4f8f5; border:1px solid #e0eae2; border-radius:9px; display:grid; gap:5px; font-size:16px; line-height:1.7; overflow-wrap:anywhere; margin:18px 0; }
+.quote-contact .summary-label { font-size:14px; margin-bottom:3px; }
+.quote-contact small { font-size:14px; color:#6d8074; }
+.quote-review-reason { border-left:3px solid #d2dfbe; padding:9px 13px; background:#f7f9f2; font-size:15px; color:#5c6a51; overflow-wrap:anywhere; }
+.shortlist-items { display:grid; gap:12px; }
+.shortlist-items>div { display:flex; flex-wrap:wrap; gap:9px 18px; align-items:center; border-bottom:1px solid #e4ebe6; padding-bottom:12px; font-size:16px; }
+.shortlist-items>div:last-child { padding-bottom:0; border-bottom:0; }
+.shortlist-items>div strong { flex:1 1 180px; }
+.shortlist-items>div span { color:#50745e; }
+.stage-records { display:grid; gap:18px; }
+.stage-records article { display:flex; align-items:flex-start; gap:20px; padding-bottom:18px; border-bottom:1px solid #e6ece7; font-size:16px; }
+.stage-records article:last-child { padding-bottom:0; border:0; }
+.stage-records article p { margin:5px 0 0; color:#607568; font-size:14px; line-height:1.8; overflow-wrap:anywhere; }
+.stage-number { background:#eef4e7; color:#5c7849; border-radius:7px; padding:7px 10px; font-size:14px; white-space:nowrap; }
+.workflow-history { border-top:1px solid #e3ebe4; margin-top:20px; padding-top:15px; }
+.workflow-history summary { cursor:pointer; font-size:14px; font-weight:600; color:#3e6850; line-height:1.9; }
+.workflow-history article { padding-top:15px; padding-bottom:8px; }
+.workflow-history p { color:#66796b; font-size:14px; line-height:1.9; margin:7px 0; overflow-wrap:anywhere; }
+.deadline-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin:20px 0; padding:15px 0; border-top:1px solid #e4ebe5; border-bottom:1px solid #e4ebe5; }
+.deadline-grid dt { color:#687e6e; font-size:14px; margin-bottom:6px; }
+.deadline-grid dd { margin:0; color:#365a45; font-size:16px; font-weight:600; overflow-wrap:anywhere; }
+.invitation-progress { display:grid; gap:20px; }
+.invitation-progress article { padding-bottom:20px; border-bottom:1px solid #e4ebe5; }
+.invitation-progress article:last-child { border:0; padding-bottom:0; }
+.invitation-progress .deadline-grid { margin:12px 0; }
+.supplier-quote-summary { background:#f4f8f5; border:1px solid #e2ebe3; padding:17px; border-radius:9px; margin:20px 0; }
+.supplier-quote-summary>strong { color:#174e3b; font-size:24px; }
+.supplier-quote-summary>p { font-size:16px; margin-bottom:12px; }
+.sample-link { color:#285f46; text-decoration:underline; text-underline-offset:4px; line-height:1.8; font-size:15px; }
+.sample-link.button { text-decoration:none; }
+#workflow-form .notice { font-size:15px; line-height:1.9; }
+#workflow-form .form-actions { padding-left:0; padding-right:0; justify-content:flex-end; gap:12px; }
+#workflow-form .form-grid { width:100%; }
+#workflow-form input[type="datetime-local"], #workflow-form textarea { min-width:0; max-width:100%; }
+@media(max-width:760px) {
+ .workflow-result { align-items:flex-start; padding:18px; gap:18px; flex-direction:column; }
+ .workflow-result>strong { display:flex; align-items:center; gap:8px; }
+ .workflow-result>strong span { max-width:none; }
+ .deadline-grid { grid-template-columns:1fr; gap:13px; }
+ .deadline-grid>div { display:flex; justify-content:space-between; gap:18px; align-items:baseline; }
+ .deadline-grid dt { margin:0; flex-shrink:0; }
+ .deadline-grid dd { text-align:right; }
+ .workflow-actions { justify-content:flex-start; width:100%; }
+ .workflow-actions .button { min-height:42px; }
+ .stage-records article { gap:13px; }
+ .shortlist-items>div { gap:8px 13px; }
+ .quote-contact { padding:13px; }
+ #workflow-form .form-actions { flex-wrap:wrap; }
+ #workflow-form .form-actions>.button { flex:1; white-space:normal; }
+}
+
+.detail-grid>aside { min-width:0; }
+.detail-grid>aside .button { max-width:100%; white-space:normal; line-height:1.7; }
+.quote-card-top { flex-wrap:wrap; }
+.quote-code { overflow-wrap:anywhere; }
+#workflow-form { font-size:16px; }
+#workflow-form .field-label { font-size:14px; }

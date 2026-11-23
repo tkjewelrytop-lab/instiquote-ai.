@@ -9,7 +9,7 @@
     const box=()=>API().ensure(state());
     const canSend=()=>typeof ctx.canPermission==='function'?!!ctx.canPermission('whatsapp.send'):true;
     function requireSend(){if(!canSend())throw Error('目前帳號沒有發送 WhatsApp 通知的權限。');}
-    const statuses={queued:'待發送',sent:'已發送',delivered:'已送達',read:'已讀',failed:'發送失敗'};
+    const statuses={queued:'待發送',sent:'已發送',delivered:'已送達',read:'已讀',failed:'發送失敗',cancelled:'已撤銷'};
     const template=id=>API().templates().find(t=>t.id===id);
     const statusBadge=m=>`<span class="wa-status ${m.status}">${icon(m.status==='failed'?'close':m.status==='queued'?'clock':'check')}${statuses[m.status]||m.status}</span>`;
     const displayPhone=p=>esc(p||'未提供電話');
@@ -17,10 +17,14 @@
       const t=template(templateId);
       return {templateId,requestId,recipientType:t.recipientType,...(t.recipientType==='supplier'?{supplierId}: {})};
     }
-    function sampleVariables(r){
+    function sampleVariables(r,templateId){
       if(!r)return {};
-      const q=r.quotes.find(q=>q.id===r.selectedQuoteId),s=state().suppliers.find(s=>s.id===q?.supplierId);
-      return {order_number:r.id,category:r.category,district:r.district,deadline:date(r.deadline,true),quote_count:String(r.quotes.length),accepted_count:String(r.invitations.filter(i=>i.status==='accepted').length),supplier_code:q?.code||'供應商 A',supplier_name:r.status==='selected'?s?.name||'':'［選定後顯示］',supplier_phone:r.status==='selected'?s?.phone||'':'［選定後顯示］',supplier_contact:r.status==='selected'?s?.contact||'':'［選定後顯示］',supplier_email:r.status==='selected'?s?.email||'':'［選定後顯示］',request_link:'在老師工作台查看需求',supplier_link:'在供應商工作台查看邀請'};
+      const valid=global.IQ.validQuotes?global.IQ.validQuotes(state(),r):r.quotes;
+      const delivered=global.IQ.deliveredQuotes?global.IQ.deliveredQuotes(state(),r):r.quotes;
+      const shortlist=delivered.filter(q=>(r.shortlistedQuoteIds||[]).includes(q.id));
+      const selected=['supplier_selected','shortlist_updated'].includes(templateId)?shortlist:delivered;
+      const contacts=selected.map(q=>{const s=state().suppliers.find(s=>s.id===q.supplierId);return s?`${s.name}｜${s.contact}｜${s.phone}｜${s.email}`:'';}).filter(Boolean).join('\n');
+      return {order_number:r.id,category:r.category,district:r.district,deadline:date(r.deadline,true),reply_deadline:date(r.invitations[0]?.replyDeadline||r.deadline,true),quote_deadline:date(r.invitations[0]?.quoteDueAt||r.deadline,true),revision:r.revision||1,stage_number:r.stage||1,quote_count:delivered.length,valid_count:valid.length,submitted_count:r.quotes.length,batch_count:delivered.length,accepted_count:r.invitations.filter(i=>i.status==='accepted').length,shortlist_count:shortlist.length,supplier_list:contacts||'目前沒有可顯示的有效方案或洽談對象。',change_reason:'請到平台查看需求變更或取消原因。',participation_instruction:'請選擇收件供應商查看適用的交報安排。'};
     }
     function previewCard(message){
       const t=message?template(message.templateId):null;
@@ -32,18 +36,20 @@
     function dashboard(){
       const s=API().summary(state()),messages=box().messages;
       const selected=messages.find(m=>m.id===view.selectedId)||messages[0];
-      return heading('COMMUNICATIONS','WhatsApp 通知中心','一個後台，掌握老師與供應商的每一則通知。',canSend()?btn('建立通知','wa-compose','primary','plus'):'')+`<section class="wa-intro"><span class="wa-message-icon">${icon('message')}</span><div><strong>讓每一步，都有清晰迴音</strong><p>需求確認、派單邀請、報價進度與截止提醒，集中管理。</p></div><span class="badge green">模擬發送 · 不會聯絡真實收件人</span></section>`+stats([['全部通知',s.total,'所有演示發送記錄','message'],['待發送',s.queued,canSend()?'可逐則模擬發送':'僅可檢視發送狀態','clock'],['已送達／已讀',s.delivered+s.read,'模擬收件狀態','check'],['發送失敗',s.failed,'查看原因並重試','activity']])+`<div class="wa-tabs"><button class="${view.tab==='messages'?'active':''}" data-action="wa-tab" data-tab="messages">發送記錄</button><button class="${view.tab==='templates'?'active':''}" data-action="wa-tab" data-tab="templates">訊息範本 <span class="muted">${API().templates().length}</span></button></div><div class="wa-layout"><div>${view.tab==='messages'?`<section class="panel"><div class="panel-header"><div><h2 class="panel-title">通知發送記錄</h2><p class="panel-subtitle">${canSend()?'可查看內容、模擬發送，以及重試失敗訊息。':'可查看通知內容、發送記錄與訊息範本。'}</p></div></div><div class="wa-toolbar"><div class="tabs">${[['all','全部'],['queued','待發送'],['delivered','已送達'],['read','已讀'],['failed','失敗']].map(([k,l])=>`<button class="tab ${view.filter===k?'active':''}" data-action="wa-filter" data-filter="${k}">${l}</button>`).join('')}</div><label class="search-box">${icon('search')}<input id="wa-search" aria-label="搜尋 WhatsApp 通知" placeholder="搜尋收件人或需求編號" value="${esc(view.search)}"></label></div><div class="wa-message-list" id="wa-message-list">${messageRows()}</div></section>`:templatesView()}</div><aside class="stack" id="wa-preview">${previewCard(selected)}${connectionCard()}</aside></div>`;
+      return heading('COMMUNICATIONS','WhatsApp 通知中心','一個後台，掌握老師與供應商的每一則通知。',canSend()?btn('建立通知','wa-compose','primary','plus'):'')+`<section class="wa-intro"><span class="wa-message-icon">${icon('message')}</span><div><strong>讓每一步，都有清晰迴音</strong><p>需求確認、派單邀請、報價進度與截止提醒，集中管理。</p></div><span class="badge green">模擬發送 · 不會聯絡真實收件人</span></section>`+stats([['全部通知',s.total,'所有演示發送記錄','message'],['待發送',s.queued,canSend()?'可逐則模擬發送':'僅可檢視發送狀態','clock'],['已送達／已讀',s.delivered+s.read,'模擬收件狀態','check'],['發送失敗',s.failed,'查看原因並重試','activity']])+`<div class="wa-tabs"><button class="${view.tab==='messages'?'active':''}" data-action="wa-tab" data-tab="messages">發送記錄</button><button class="${view.tab==='templates'?'active':''}" data-action="wa-tab" data-tab="templates">訊息範本 <span class="muted">${API().templates().length}</span></button></div><div class="wa-layout"><div>${view.tab==='messages'?`<section class="panel"><div class="panel-header"><div><h2 class="panel-title">通知發送記錄</h2><p class="panel-subtitle">${canSend()?'可查看內容、模擬發送，以及重試失敗訊息。':'可查看通知內容、發送記錄與訊息範本。'}</p></div></div><div class="wa-toolbar"><div class="tabs">${[['all','全部'],['queued','待發送'],['delivered','已送達'],['read','已讀'],['failed','失敗'],['cancelled','已撤銷']].map(([k,l])=>`<button class="tab ${view.filter===k?'active':''}" data-action="wa-filter" data-filter="${k}">${l}</button>`).join('')}</div><label class="search-box">${icon('search')}<input id="wa-search" aria-label="搜尋 WhatsApp 通知" placeholder="搜尋收件人或需求編號" value="${esc(view.search)}"></label></div><div class="wa-message-list" id="wa-message-list">${messageRows()}</div></section>`:templatesView()}</div><aside class="stack" id="wa-preview">${previewCard(selected)}${connectionCard()}</aside></div>`;
     }
     function templatesView(){return `<section class="panel"><div class="panel-header"><div><h2 class="panel-title">業務通知範本</h2><p class="panel-subtitle">以下為原型文案，未提交至 Meta 審核。</p></div><span class="badge gray">繁體中文</span></div><div class="panel-body wa-template-grid">${API().templates().map(t=>`<article class="wa-template-card"><div class="request-top"><h3>${esc(t.title)}</h3><span class="badge green">演示範本</span></div><p class="wa-template-description">${esc(t.description)}</p><p class="wa-template-snippet">${esc(t.body)}</p><div class="request-bottom"><span class="muted">收件人：${t.recipientType==='teacher'?'老師':'供應商'}</span>${canSend()?btn('使用範本','wa-compose','secondary small','',`data-template="${t.id}"`):''}</div></article>`).join('')}</div></section>`;}
     function eligibleSuppliers(r){return state().suppliers.filter(s=>r?.invitations.some(i=>i.supplierId===s.id)&&s.status==='approved');}
     function composePreview(templateId,requestId,supplierId){
       const t=template(templateId),r=state().requests.find(r=>r.id===requestId),s=state().suppliers.find(s=>s.id===supplierId);
-      return previewCard({templateId,body:API().preview(templateId,sampleVariables(r)),recipientName:t?.recipientType==='teacher'?r?.teacher||'老師':s?.name||'供應商',recipientPhone:t?.recipientType==='teacher'?r?.phone:s?.phone,requestId:r?.id||'',attempts:0,createdAt:new Date().toISOString()});
+      let body=API().preview(templateId,sampleVariables(r,templateId));
+      if(templateId==='request_updated'&&r&&s){try{body=API().previewData(state(),dataFor(templateId,requestId,supplierId)).body;}catch{}}
+      return previewCard({templateId,body,recipientName:t?.recipientType==='teacher'?r?.teacher||'老師':s?.name||'供應商',recipientPhone:t?.recipientType==='teacher'?r?.phone:s?.phone,requestId:r?.id||'',attempts:0,createdAt:new Date().toISOString()});
     }
     function showCompose(templateId='request_received'){
       requireSend();
       const t=template(templateId)||API().templates()[0];
-      const r=(t.id==='supplier_selected'?state().requests.find(r=>r.status==='selected'):null)||state().requests[0];
+      const r=(t.id==='supplier_selected'?state().requests.find(r=>r.shortlistedQuoteIds?.length):null)||state().requests[0];
       if(!r)throw Error('請先建立一份需求，再新增通知。');
       const suppliers=eligibleSuppliers(r);
       modal('建立 WhatsApp 演示通知',`<div class="wa-modal-layout"><form id="wa-compose-form"><div class="stack"><div class="notice">${icon('shield')}只建立演示通知，不會發送真實 WhatsApp。</div><label class="field"><span class="field-label">通知範本</span><select class="select" name="templateId" id="wa-template-select">${API().templates().map(x=>`<option value="${x.id}" ${x.id===t.id?'selected':''}>${esc(x.title)}</option>`).join('')}</select></label><label class="field"><span class="field-label">關聯需求</span><select class="select" name="requestId" id="wa-request-select">${state().requests.map(x=>`<option value="${x.id}" ${x.id===r.id?'selected':''}>${esc(x.id)} · ${esc(x.title)}</option>`).join('')}</select></label><div id="wa-recipient-field">${recipientField(t,r,suppliers)}</div><p class="field-help">收件人及訊息數字由關聯需求自動帶入，無須填寫電話。邀請與提醒只適用符合條件的供應商。</p><div class="form-actions">${btn('取消','close-modal','secondary')}<button type="submit" class="button primary">加入待發送</button></div></div></form><div id="wa-compose-preview">${composePreview(t.id,r.id,suppliers[0]?.id)}</div></div>`);

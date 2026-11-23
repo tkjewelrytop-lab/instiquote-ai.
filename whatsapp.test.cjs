@@ -9,12 +9,12 @@ vm.runInNewContext(fs.readFileSync(path.join(__dirname,'docs','whatsapp.js'),'ut
 const IQ=sandbox.window.IQ, WA=sandbox.window.IQWhatsApp;
 let scenarios=0;
 function check(name, action){action();scenarios++;console.log(`PASS ${name}`);}
-function fresh(){const state=IQ.seed();WA.ensure(state);return state;}
+function fresh(){const state=IQ.seed();IQ.ensureWorkflow(state);WA.ensure(state);return state;}
 function findRequest(state,index=0){return state.requests[index];}
 function data(state,templateId='request_received',recipientType='teacher',index=0){return {templateId,recipientType,requestId:findRequest(state,index).id};}
 
 check('existing state migrates once and empty queues are not reseeded',()=>{
-  const state=IQ.seed(),before=JSON.stringify(state.requests);
+  const state=IQ.seed();IQ.ensureWorkflow(state);const before=JSON.stringify(state.requests);
   WA.ensure(state);assert.equal(state.whatsapp.messages.length,4);
   assert.deepEqual(new Set(state.whatsapp.messages.map(message=>message.status)),new Set(['read','delivered','failed','queued']));
   assert.equal(JSON.stringify(state.requests),before);
@@ -79,13 +79,14 @@ check('failed sends require retry and preserve cumulative attempt/audit history'
   assert.equal(state.events.filter(e=>e.messageId===m.id).length,4);
 });
 
-check('selected supplier contacts are available only after a real selection',()=>{
+check('shortlist notifications use delivered valid suppliers without claiming a completed transaction',()=>{
   const state=fresh();const before=JSON.stringify(state);
   assert.throws(()=>WA.queue(state,data(state,'supplier_selected')));assert.equal(JSON.stringify(state),before);
-  const ready=state.requests.find(r=>r.status==='ready');IQ.selectQuote(state,ready.id,ready.quotes[0].id);
+  const ready=state.requests.find(r=>r.status==='ready');IQ.toggleShortlist(state,ready.id,ready.quotes[0].id);
   const m=WA.queue(state,{templateId:'supplier_selected',requestId:ready.id,recipientType:'teacher'});
   const selected=state.suppliers.find(s=>s.id===ready.quotes[0].supplierId);
-  assert(m.body.includes(selected.name));assert(m.body.includes(selected.phone));
+  assert(m.body.includes(selected.name));assert(m.body.includes(selected.phone));assert(m.body.includes('不代表成交'));
+  assert.notEqual(ready.status,'selected');
 });
 
 check('reminders are limited to accepted, outstanding, unexpired supplier quotes',()=>{
@@ -99,12 +100,43 @@ check('reminders are limited to accepted, outstanding, unexpired supplier quotes
 });
 
 check('template clones, missing placeholders and summary remain predictable',()=>{
-  const state=fresh(),templates=WA.templates();assert.equal(templates.length,7);
+  const state=fresh(),templates=WA.templates();assert.equal(templates.length,13);
   templates[0].variables.push('mutated');templates[0].body='bad';
   assert(!WA.templates()[0].variables.includes('mutated'));assert.notEqual(WA.templates()[0].body,'bad');
   assert(WA.preview('request_received',{order_number:'EXAMPLE'}).includes('{{category}}'));
   assert(WA.preview('request_received',{order_number:'<script>'}).includes('<script>'));
   const s=WA.summary(state);assert.equal(s.total,4);assert.equal(s.successful,2);assert.equal(s.failed,1);assert.equal(s.queued,1);
   const before=JSON.stringify(state);assert.throws(()=>WA.send(state,'missing'));assert.equal(JSON.stringify(state),before);
+});
+check('empty stage outcomes notify once only after an actual model delivery event',()=>{
+  const state=fresh(),r=state.requests.find(r=>r.status==='matching');
+  const before=state.whatsapp.messages.length;
+  assert.throws(()=>WA.queue(state,{templateId:'stage_delivered',recipientType:'teacher',requestId:r.id,quoteIds:[]}));
+  assert.equal(state.whatsapp.messages.length,before);
+  IQ.deliverStage(state,r.id,'第一階段暫無有效報價');WA.syncWorkflow(state);
+  const notices=state.whatsapp.messages.filter(m=>m.templateId==='stage_delivered'&&m.requestId===r.id);
+  assert.equal(notices.length,1);assert(notices[0].body.includes('本批 0 份'));assert(notices[0].body.includes('延期'));
+  WA.syncWorkflow(state);assert.equal(state.whatsapp.messages.filter(m=>m.templateId==='stage_delivered'&&m.requestId===r.id).length,1);
+  WA.send(state,notices[0].id);assert.equal(notices[0].status,'delivered');
+});
+check('legacy unsent copy is revoked when the workflow notification contract changes',()=>{
+  const state=fresh(),m=WA.queue(state,data(state));
+  delete m.notificationVersion;
+  assert.throws(()=>WA.send(state,m.id));
+  WA.syncWorkflow(state);assert.equal(m.status,'cancelled');assert(m.error.includes('通知流程已更新'));
+  assert.throws(()=>WA.retry(state,m.id));
+});
+check('withdrawn suppliers receive requirement updates for information without a false resubmission promise',()=>{
+  const state=fresh(),r=findRequest(state),supplierId=r.invitations[0].supplierId;
+  IQ.acceptInvitation(state,r.id,supplierId);
+  IQ.submitQuote(state,r.id,supplierId,{amount:14000,description:'材料及導師',validDays:30});
+  IQ.withdrawInvitation(state,r.id,supplierId,'公司檔期未能配合');
+  r.invitations.find(i=>i.supplierId===supplierId).quoteDueAt=new Date(Date.now()-3600000).toISOString();
+  IQ.updateRequest(state,r.id,{description:'學生人數增加，請按最新規格安排',deadline:new Date(Date.now()+144*3600000).toISOString(),reason:'參與人數更新'});
+  WA.syncWorkflow(state);
+  const notice=state.whatsapp.messages.find(m=>m.templateId==='request_updated'&&m.requestId===r.id&&m.supplierId===supplierId);
+  assert(notice);assert(notice.body.includes('僅供更新知情'));assert(notice.body.includes('您已退出'));assert(notice.body.includes('不適用（本次無交報安排）'));
+  assert(!notice.body.includes('請重新提交'));assert(!notice.body.includes('已提交報價須重新確認或修訂'));
+  WA.send(state,notice.id);assert.equal(notice.status,'delivered');
 });
 console.log(`${scenarios} WhatsApp prototype scenarios passed.`);

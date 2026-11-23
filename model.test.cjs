@@ -50,35 +50,40 @@ check('five accepted slots are enforced even after a quote is submitted', () => 
   assert.equal(request.invitations.filter(i => i.status === 'accepted').length, 5);
 });
 
-check('full request to quote to selection cycle persists across reload', () => {
+check('reviewed quotes reach the target and a shortlist persists without completing a deal', () => {
   const state = IQ.seed();
   const request = IQ.createRequest(state, form);
   const ids = request.invitations.slice(0, 5).map(i => i.supplierId);
   assert.throws(() => IQ.submitQuote(state, request.id, ids[0], { amount: 15000, description: '報價' }), /先確認接單/);
-  assert.throws(() => IQ.selectQuote(state, request.id, 'missing'), /等待報價/);
+  assert.throws(() => IQ.selectQuote(state, request.id, 'missing'), /找不到/);
   ids.forEach((id, i) => {
     IQ.acceptInvitation(state, request.id, id);
     if (i === 0) {
       assert.throws(() => IQ.submitQuote(state, request.id, id, { amount: 0, description: '報價' }), /金額/);
       assert.throws(() => IQ.submitQuote(state, request.id, id, { amount: 100, description: '' }), /服務內容/);
     }
-    IQ.submitQuote(state, request.id, id, { amount: 15000 + i * 500, description: '導師、材料及交通。', validDays: 30 });
+    const submitted = IQ.submitQuote(state, request.id, id, { amount: 15000 + i * 500, description: '導師、材料及交通。', validDays: 30 });
+    assert.equal(submitted.reviewStatus, 'pending');
+    IQ.reviewQuote(state, request.id, submitted.id, 'valid', '符合需求');
     if (i < 4) assert.equal(request.status, 'collecting');
   });
   assert.equal(request.status, 'ready');
   const quote = IQ.selectQuote(state, request.id, request.quotes[0].id);
-  assert.equal(request.status, 'selected');
+  assert.equal(request.status, 'ready');
   assert.equal(quote.supplierId, ids[0]);
   assert.equal(IQ.load().requests[0].selectedQuoteId, quote.id);
+  assert.equal(IQ.load().requests[0].shortlistedQuoteIds[0], quote.id);
+  IQ.teacherDecision(state, request.id, 'accept', { reason: '接受現有結果並另行洽談' });
   assert.throws(() => IQ.submitQuote(state, request.id, ids[0], { amount: 100, description: '重複' }), /停止接收/);
 });
 
-check('deadline blocks acceptance and submission and expired partial results are selectable', () => {
+check('deadline blocks late actions and delivers only reviewed partial results for discussion', () => {
   const state = IQ.seed();
   const request = IQ.createRequest(state, form);
   const first = request.invitations[0].supplierId;
   IQ.acceptInvitation(state, request.id, first);
-  IQ.submitQuote(state, request.id, first, { amount: 12000, description: '導師與材料。' });
+  const quote = IQ.submitQuote(state, request.id, first, { amount: 12000, description: '導師與材料。' });
+  IQ.reviewQuote(state, request.id, quote.id, 'valid', '符合需求');
   request.deadline = new Date(Date.now() - 1000).toISOString();
   assert.throws(() => IQ.acceptInvitation(state, request.id, request.invitations[1].supplierId), /截止時間/);
   assert.throws(() => IQ.submitQuote(state, request.id, first, { amount: 10000, description: '遲交' }), /截止時間/);
@@ -86,7 +91,8 @@ check('deadline blocks acceptance and submission and expired partial results are
   const reloaded = IQ.load();
   assert.equal(reloaded.requests[0].status, 'closed');
   IQ.selectQuote(reloaded, request.id, request.quotes[0].id);
-  assert.equal(reloaded.requests[0].status, 'selected');
+  assert.equal(reloaded.requests[0].status, 'closed');
+  assert.equal(reloaded.requests[0].shortlistedQuoteIds[0], quote.id);
 });
 
 check('approval and suspension control further supplier actions', () => {
