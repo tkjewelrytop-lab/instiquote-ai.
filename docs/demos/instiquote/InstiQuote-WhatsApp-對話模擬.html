@@ -1,0 +1,1353 @@
+<!doctype html><html lang="zh-HK"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="light"><title>InstiQuote · WhatsApp 對話模擬</title><style>:root {
+  color-scheme: light;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang HK", "Microsoft JhengHei", sans-serif;
+  --ink: #172420;
+  --muted: #53645d;
+  --green: #096a48;
+  --keyline: #cbd8d0;
+  --wash: #eff4ef;
+  --paper: #f7f8f5;
+  --incoming: #fff;
+  --outgoing: #d9fdd3;
+  --wall: #eee8dc;
+  --doodles: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='172' height='144' fill='none' stroke='%238b887a' stroke-opacity='.16' stroke-width='1.15' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m12 21 15-6-4 13-4-6-7-1Zm7 1 8-7M86 10q-4-5-7-1t8 10q8-7 5-10-3-2-6 1Zm48 26q-2-7 5-8 10-1 10 7t-11 7l-5 3 1-5M18 103q4-6 9-1t8 0M121 107l4-4 4 4 4-4M59 59l4 2 5-2-2 5 1 4-5-2-4 2 1-5-2-4ZM87 125q4 5 9 0t8 0M151 120v-9l7-2v9m-7 3c-4 2-5-2-1-3m8 0c-4 2-5-2-1-3'/%3E%3Ccircle cx='32' cy='55' r='2'/%3E%3Ccircle cx='112' cy='72' r='2.5'/%3E%3Ccircle cx='65' cy='108' r='1.6'/%3E%3C/svg%3E");
+  background: var(--paper);
+  color: var(--ink);
+  text-rendering: optimizeLegibility;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button, select { -webkit-tap-highlight-color: transparent; }
+button { cursor: pointer; }
+button:disabled { cursor: default; }
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, [tabindex]:focus-visible {
+  outline: 3px solid #087a6a; outline-offset: 3px;
+}
+[hidden] { display: none !important; }
+svg { vertical-align: middle; }
+.sim-app { min-height: 100vh; min-height: 100dvh; background: linear-gradient(115deg, #f6f8f4 15%, #f2f5ef 63%, #edf2eb); }
+.topbar { background: #fcfdfb; border-bottom: 1px solid #dce4da; display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: 67px; padding: 8px max(28px, calc((100vw - 1100px)/2)); }
+.brand, .toplinks { display: flex; align-items: center; gap: 9px; }
+.brand { color: #173b30; font-size: 18px; font-weight: 750; text-decoration: none; }
+.brand-symbol { background: #0e5d42; border-radius: 9px; color: white; width: 32px; height: 32px; display: grid; place-items: center; }
+.brand-symbol svg { width: 21px; height: 21px; }
+.toplinks { gap: 15px; color: var(--muted); font-size: 13px; }
+.toplinks a { color: var(--green); font-weight: 680; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.sim-layout { width: min(1080px, calc(100% - 68px)); margin: 0 auto; min-height: calc(100vh - 68px); min-height: calc(100dvh - 68px); padding: 25px 0; display: grid; grid-template-columns: minmax(255px, 365px) minmax(410px, 1fr); column-gap: clamp(28px, 7vw, 104px); align-items: center; }
+.sidebar { min-width: 0; display: grid; align-content: center; gap: 0; }
+.eyebrow { margin: 0 0 8px; color: #41715b; font-size: 12px; font-weight: 750; line-height: 1.5; letter-spacing: .06em; }
+.sidebar h1 { margin: 0; color: #142e27; font-size: clamp(32px, 3.5vw, 49px); font-weight: 740; line-height: 1.14; letter-spacing: -.04em; }
+.intro { margin: 13px 0 20px; color: #4a6256; line-height: 1.65; font-size: 15px; }
+.role-list { display: grid; gap: 8px; }
+.role { display: flex; align-items: center; width: 100%; min-width: 0; gap: 12px; border: 1px solid #d6e1d7; border-radius: 12px; background: #fdfefc; padding: 10px 12px; text-align: left; }
+.role:hover { border-color: #93b6a3; background: #f5faf5; }
+.role.active { border-color: #62a485; background: #e7f4e9; box-shadow: inset 3px 0 0 #15875a; }
+.role-icon { display: inline-flex; flex: 0 0 36px; width: 36px; height: 36px; align-items: center; justify-content: center; border-radius: 11px; background: #e9efea; color: #496454; }
+.role-icon svg { width: 20px; height: 20px; }
+.role.active .role-icon { color: #fff; background: #177049; }
+.role-copy { min-width: 0; flex: 1; }
+.role-copy strong, .role-copy small { display: block; }
+.role-copy strong { color: #183b2c; font-size: 15px; line-height: 1.45; }
+.role-copy small { color: #5a6e60; font-size: 12px; line-height: 1.45; margin-top: 1px; }
+.chev { color: #658173; align-self: center; }
+.chev svg, svg.chev { width: 16px; height: 16px; }
+.case-card { margin: 17px 0 10px; padding: 12px 14px; background: #eef2ec; border: 1px solid #d8e1d6; border-radius: 10px; color: #486354; font-size: 13px; line-height: 1.6; }
+.case-card > :first-child { margin-top: 0; }
+.case-card > :last-child { margin-bottom: 0; }
+.case-card strong,.case-card b { color: #243c2e; }
+.case-card p,.case-card h2,.case-card h3 { margin: 4px 0; font-size: inherit; }
+.reset-btn { justify-self: start; color: #476353; display: inline-flex; align-items: center; gap: 7px; background: transparent; border: 0; padding: 5px 0; font-size: 13px; font-weight: 650; }
+.reset-btn svg { width: 15px; height: 15px; }
+.reset-btn:hover { text-decoration: underline; text-underline-offset: 3px; }
+.device-area { min-width: 0; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.phone { position: relative; isolation: isolate; width: min(100%, 406px); height: clamp(555px, calc(100vh - 142px), 795px); height: clamp(555px, calc(100dvh - 142px), 795px); display: flex; flex-direction: column; overflow: hidden; background: #fafbf8; border: 6px solid #25312b; border-radius: 42px; box-shadow: 0 1px 0 2px #a7b4aa, 0 22px 42px -18px #1e422747, 0 4px 9px #263e3024; }
+.statusbar { flex: 0 0 34px; display: flex; justify-content: space-between; align-items: flex-end; padding: 0 23px 3px; font-size: 13px; line-height: 16px; font-weight: 750; color: #161e1a; background: #fafbf8; }
+.status-icons { display: inline-flex; align-items: center; gap: 3px; line-height: 1; }
+.status-icons svg { max-width: 30px; height: 13px; }
+.chat-head { flex: 0 0 auto; min-height: 59px; display: flex; align-items: center; gap: 9px; padding: 6px 15px 8px; background: #fafbf8; border-bottom: 1px solid #d7dad2; z-index: 1; }
+.mobile-roles { display: none; }
+.avatar { display: grid; flex: 0 0 40px; width: 40px; height: 40px; place-items: center; background: #d6eddd; color: #174f37; font-size: 14px; font-weight: 750; border-radius: 50%; }
+.avatar svg { width: 22px; height: 22px; }
+.contact { min-width: 0; flex: 1; }
+.contact strong,.contact small { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.contact strong { font-weight: 720; font-size: 16px; line-height: 1.32; color: #152d21; }
+.contact small { margin-top: 1px; color: #58685d; font-size: 11px; line-height: 1.4; }
+.head-mark { display: inline-flex; align-items: center; gap: 3px; color: #496759; font-size: 11px; font-weight: 600; }
+.head-mark svg { width: 17px; height: 17px; }
+.chat-body { flex: 1 1 auto; min-height: 0; min-width: 0; display: flex; flex-direction: column; align-items: stretch; gap: 6px; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; scrollbar-width: thin; scrollbar-color: #bcc5ba transparent; background-color: var(--wall); background-image: var(--doodles); background-size: 172px 144px; padding: 13px 13px 17px; }
+.chat-body > * { flex-shrink: 0; }
+.day,.system-note { align-self: center; max-width: 94%; text-align: center; border-radius: 8px; font-size: 11px; line-height: 1.45; font-weight: 630; }
+.day { padding: 4px 9px; color: #43564b; background: #f6f7f1; box-shadow: 0 1px 2px #211e1214; }
+.system-note { color: #594d27; background: #fdf3c9; margin: 2px auto 6px; padding: 5px 9px; font-weight: 500; }
+.system-note svg { width: 12px; height: 12px; }
+.msg { position: relative; width: fit-content; max-width: 86%; min-width: 56px; padding: 7px 9px 4px; border-radius: 10px; color: #15211a; font-size: 14px; line-height: 1.48; box-shadow: 0 1px 1.5px #302e2325; overflow-wrap: anywhere; }
+.msg.in { background: var(--incoming); align-self: flex-start; margin-left: 4px; border-top-left-radius: 2px; --bubble: var(--incoming); }
+.msg.out { background: var(--outgoing); align-self: flex-end; margin-right: 4px; border-top-right-radius: 2px; --bubble: var(--outgoing); }
+.msg.in::before,.msg.out::before { content: ""; position: absolute; width: 8px; height: 10px; background: var(--bubble); top: 0; }
+.msg.in::before { left: -6px; clip-path: polygon(0 0, 100% 0, 100% 100%); }
+.msg.out::before { right: -6px; clip-path: polygon(0 0, 100% 0, 0 100%); }
+.msg-text { white-space: pre-wrap; }
+.msg-text p { margin: 0; }
+.msg-meta { display: flex; align-items: center; justify-content: flex-end; gap: 3px; margin: 2px 0 0 4px; font-family: -apple-system, "Segoe UI", Arial, sans-serif; font-size: 9.5px; line-height: 1.25; color: #64766b; font-weight: 450; }
+.msg-meta svg { width: 14px; height: 11px; color: #177fbd; }
+.bubble-actions { align-self: flex-start; width: fit-content; min-width: 55%; max-width: 87%; margin: -2px 0 3px 4px; display: flex; flex-direction: column; overflow: hidden; border-radius: 9px; background: #ffffff; box-shadow: 0 1px 1.5px #302e2324; }
+.chat-action { display: flex; align-items: center; justify-content: center; gap: 7px; width: 100%; min-height: 33px; padding: 5px 11px; border: 0; border-bottom: 1px solid #e3e8e2; background: white; color: #087b53; text-align: center; font-size: 13px; font-weight: 650; }
+.chat-action:last-child { border-bottom: 0; }
+.chat-action:focus-visible { outline-offset: -3px; }
+.chat-action:hover { background: #eef9f1; }
+.chat-action:disabled { color: #768379; background: #f4f6f2; }
+.chat-action svg { flex: 0 0 15px; width: 15px; height: 15px; }
+.typing { align-self: flex-start; margin: 1px 4px; border-radius: 10px 10px 10px 2px; background: #fff; padding: 7px 12px; color: #63746a; font-size: 12px; }
+.typing span:empty { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: #8e9b92; margin: 0 1px; }
+.composer { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; min-height: 51px; padding: 6px 12px 3px; background: #fafbf8; border-top: 1px solid #d9ddd4; }
+.composer input { flex: 1; min-width: 0; min-height: 37px; border: 1px solid #ced8cd; border-radius: 19px; background: #fff; padding: 7px 12px; font-size: 14px; color: #173124; }
+.composer input::placeholder { color: #738276; }
+.help-btn,.send-btn { flex-shrink: 0; display: grid; place-items: center; padding: 0; width: 36px; height: 36px; border-radius: 50%; border: 0; }
+.help-btn { background: transparent; color: #283d32; }
+.send-btn { background: #08815a; color: #fff; }
+.help-btn:hover { background: #e7eee7; }.send-btn:hover { background: #046a48; }
+.help-btn svg,.send-btn svg { width: 19px; height: 19px; }
+.send-btn:disabled { color: #65756a; background: #dde5dd; }
+.home-indicator { display: block; flex: 0 0 auto; width: 107px; height: 4px; margin: 8px auto 7px; border-radius: 4px; background: #26352d; }
+.device-caption { margin: 12px 0 0; color: #556d5e; text-align: center; font-size: 12px; line-height: 1.4; }
+.portal-layer { position: absolute; z-index: 4; inset: 0; display: flex; flex-direction: column; min-width: 0; background: #f6f8f4; }
+.portal-bar { min-height: 50px; flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 16px; background: #fff; border-bottom: 1px solid #d8e0d7; color: #254631; font-size: 13px; font-weight: 660; }
+.portal-bar svg { width: 16px; height: 16px; }
+.portal-close { display: inline-flex; align-items: center; gap: 4px; background: #eef5ee; color: #246044; border: 0; border-radius: 16px; padding: 6px 10px; font-size: 12px; font-weight: 650; }
+.portal-close:hover { background: #dfeee3; }
+.portal-content { flex: 1 1 auto; min-height: 0; min-width: 0; overflow-y: auto; overscroll-behavior: contain; padding: 20px 17px 24px; color: #203a2c; }
+.composer .input-wrap {flex:1;display:flex;align-items:center;min-width:0;background:#fff;border:1px solid #c7cac6;border-radius:22px;padding-right:9px}
+.composer .input-wrap input {width:100%;border:0;outline-offset:-3px;background:transparent;}
+.sticker-icon,.composer-camera {line-height:1;color:#151a16;}
+.sticker-icon svg {width:18px;height:18px;}
+.send-btn.blank {background:transparent;color:#18201a;}
+.mobile-roles {display:inline-grid;place-items:center;min-width:24px;height:32px;border:0;background:transparent;color:#17241c;padding:0;}
+.msg .msg-meta {float:right;margin:5px 0 -1px 7px;display:inline-flex;min-height:12px;}
+.msg::after {content:"";display:block;clear:both;}
+.msg-text {font-size:15px;line-height:1.43;font-weight:400;}
+.msg.with-actions {border-bottom-left-radius:4px;border-bottom-right-radius:4px;}
+.bubble-actions {margin-top:-5px;}
+.chat-head .head-mark {color:#17241c;}
+.head-mark svg {width:21px;height:21px;}
+.quick-preview {display:inline-flex;align-items:center;gap:5px;color:#07684c;font-weight:650;text-decoration:underline;text-underline-offset:3px;}
+.chat-body .bubble-actions,.chat-body .msg.with-actions {width:86%;max-width:86%;}
+.chat-body .bubble-actions {border-top:1px solid #edece8;border-top-left-radius:3px;border-top-right-radius:3px;}
+.statusbar .status-icons {gap:2px;}
+.statusbar .status-icons svg:nth-child(1) {width:17px;height:14px;}
+.statusbar .status-icons svg:nth-child(2) {width:15px;height:14px;}
+.statusbar .status-icons svg:nth-child(3) {width:24px;height:18px;}
+.case-card .quick-preview {margin-top:3px;}
+.portal-content h2 { font-size: 25px; letter-spacing: -.03em; line-height: 1.3; margin: 0 0 7px; }
+.portal-lead { color: #4e6556; font-size: 14px; line-height: 1.65; margin: 0 0 15px; }
+.fields { display: grid; gap: 10px; margin: 11px 0 16px; }
+.field { min-width: 0; display: grid; gap: 4px; color: #264635; font-size: 14px; }
+.field > label,.field > small,.field dt,.field > span:first-child { font-size: 12px; color: #4c6655; font-weight: 650; }
+.field input:not([type=checkbox]),.field select,.field textarea,.portal-content input[type=file] { width: 100%; min-width: 0; background: #fff; border: 1px solid #bfcfc3; border-radius: 8px; padding: 8px 9px; color: #244230; }
+.field textarea { resize: vertical; }
+.portal-info,.portal-status { margin: 11px 0; padding: 10px 12px; border-radius: 8px; font-size: 13px; line-height: 1.55; }
+.portal-info { background: #edf2ed; border: 1px solid #d8e4d9; color: #3f5a48; }
+.portal-status { background: #e2f3e7; border: 1px solid #b7dac3; color: #195d38; }
+.portal-cta,.portal-secondary { width: 100%; min-height: 40px; border-radius: 9px; margin: 4px 0; padding: 7px 11px; font-size: 14px; font-weight: 680; }
+.portal-cta { background: #0d754e; color: #fff; border: 1px solid #096742; }
+.portal-secondary { background: #fff; color: #275b42; border: 1px solid #c3d3c6; }
+.portal-cta:disabled,.portal-secondary:disabled { color: #78847b; background: #e1e8e0; border-color: #cfdacf; }
+.role-menu { position: absolute; z-index: 6; inset: 0; display: flex; align-items: flex-end; padding: 13px; background: #14281d63; }
+.role-menu-inner { width: 100%; max-height: 88%; overflow-y: auto; border: 1px solid #c3cfc4; border-radius: 17px; background: #f8faf7; box-shadow: 0 8px 24px #102e1a30; padding: 16px; }
+.role-menu-inner h2,.role-menu-inner h3 { margin: 0 0 10px; font-size: 18px; }
+.role-menu-inner .role + .role { margin-top: 6px; }
+@media (max-width: 780px) {
+  .sim-app,.sim-layout { width: 100%; margin: 0; padding: 0; min-height: 100vh; min-height: 100dvh; background: var(--wall); }
+  .topbar,.sidebar,.device-caption { display: none; }
+  .sim-layout,.device-area { display: block; }
+  .phone { width: 100%; max-width: none; height: 100vh; height: 100dvh; border: 0; border-radius: 0; box-shadow: none; }
+  .statusbar { padding-left: max(19px, env(safe-area-inset-left)); padding-right: max(19px, env(safe-area-inset-right)); }
+  .chat-head { padding-left: max(8px, env(safe-area-inset-left)); }
+  .mobile-roles { display: flex; align-items: center; justify-content: center; gap: 2px; min-width: 32px; min-height: 40px; padding: 0 2px; border: 0; background: transparent; border-radius: 8px; color: #147054; font-size: 12px; font-weight: 660; }
+  .mobile-roles svg { width: 19px; height: 19px; }
+  .home-indicator { margin-bottom: max(6px, env(safe-area-inset-bottom)); }
+  .composer input { font-size: 16px; }
+  .role-menu { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+  .portal-content { padding-bottom: max(18px, env(safe-area-inset-bottom)); }
+}
+@media (min-width: 781px) and (max-height: 690px) {
+  .topbar { min-height: 48px; }
+  .sim-layout { min-height: calc(100dvh - 49px); padding-block: 14px; }
+  .phone { height: max(450px, calc(100dvh - 106px)); }
+  .role { padding-block: 7px; }.intro { margin-block: 8px 14px; }.case-card { margin-block: 10px 5px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0s !important; transition-duration: 0s !important; }
+}
+</style></head>
+<body><div class="sim-app"><header class="topbar"><a class="brand" href="InstiQuote-B-WhatsApp自動派單.html"><span class="brand-symbol" aria-hidden="true"></span>InstiQuote</a><div class="toplinks"><span>iPhone 淺色版</span><a href="InstiQuote-B-WhatsApp自動派單.html">返回全流程圖解</a></div></header>
+<main class="sim-layout"><aside class="sidebar"><p class="eyebrow">InstiQuote 密封報價</p><h1>WhatsApp<br>對話模擬</h1><p class="intro">揀一個身份，在手機畫面按訊息回覆，或輸入文字試用。</p><div class="role-picker"></div><div class="case-card"><strong>此宗詢價</strong><p>IQ-1203　小六升中面試班</p><a class="quick-preview" href="#teacher/confirm">直接看老師二次確認 →</a></div><button class="reset-btn" type="button">重新開始</button></aside>
+<section class="device-area" aria-label="香港學校詢價 WhatsApp 示範"><p class="device-caption">iPhone 淺色介面示範 · 訊息及開標資料只用於本機體驗</p></section></main></div><script>(() => {
+  const paths = {
+    back:'<path d="m15 3-9 9 9 9"/>', chevron:'<path d="m9 5 7 7-7 7"/>',
+    reply:'<path d="m9 4-6 6 6 6M4 10h9c5 0 7 3 7 7"/>',
+    external:'<path d="M13 4h7v7m0-7L9 15M10 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/>',
+    phone:'<path d="M7 3 4 4c-2 2 0 7 4 11s9 6 11 4l2-3-5-3-2 2c-2-1-4-3-5-5l1-2Z"/>',
+    camera:'<path d="M3 7h4l2-3h6l2 3h4v13H3z"/><circle cx="12" cy="13" r="3.6"/>',
+    mic:'<rect x="9" y="2" width="6" height="13" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2m-7 9v3m-4 0h8"/>',
+    send:'<path d="m4 4 17 8-17 8 3-7 8-1-8-1Z" fill="currentColor" stroke-linejoin="round"/>',
+    plus:'<path d="M12 3v18M3 12h18"/>', sticker:'<path d="M5 3h14a2 2 0 0 1 2 2v9l-7 7H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm16 11h-5a2 2 0 0 0-2 2v5"/>',
+    signal:'<path d="M2 19v-3m5 3v-6m5 6v-9m5 9V6" stroke-width="3.4"/>',
+    wifi:'<path d="M2 9a15 15 0 0 1 20 0M6 13a9 9 0 0 1 12 0m-8 4a3 3 0 0 1 4 0"/><circle cx="12" cy="19" r="1" fill="currentColor" stroke="none"/>',
+    battery:'<rect x="1.5" y="7" width="18.5" height="10" rx="2.5" stroke-width="1.2"/><rect x="3.5" y="9" width="14" height="6" rx="1" fill="currentColor" stroke="none"/><path d="M22 11v2"/>',
+    checks:'<path d="m1 12 4 4L16 5m-5 9 2 2L24 5"/>',
+    school:'<path d="m2 10 10-6 10 6-10 6zM6 13v5q6 5 12 0v-5m3-2v6"/>',
+    supplier:'<path d="M3 9h18l-2-5H5zM4 10v10h16V10m-11 10v-6h5v6"/>',
+    support:'<path d="M4 14v-2a8 8 0 0 1 16 0v5q0 4-6 4"/><rect x="3" y="11" width="4" height="7" rx="2"/><rect x="17" y="11" width="4" height="7" rx="2"/>',
+    reset:'<path d="M4 12a8 8 0 1 1 2 5M4 5v7h7"/>',
+    lock:'<rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
+    close:'<path d="m5 5 14 14m0-14L5 19"/>', dots:'<circle cx="4" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="20" cy="12" r="1"/>',
+    book:'<path d="M4 4h11l5 4v12H6a2 2 0 0 1-2-2zM8 9h8m-8 4h8"/>',
+  };
+  const icon = name => '<svg aria-hidden="true" focusable="false" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+(paths[name] || '')+'</svg>';
+  function create(tag,cls='',text='') {
+    const element=document.createElement(tag);
+    if(cls) element.className=cls;
+    if(text) element.textContent=text;
+    return element;
+  }
+  function shell() {
+    return `<div class="phone"><div class="statusbar" aria-hidden="true"><span class="clock-text">9:41</span><span class="status-icons">${icon('signal')}${icon('wifi')}${icon('battery')}</span></div>
+<div class="chat-head"><button type="button" class="mobile-roles" aria-label="切換示範對話">${icon('back')}</button><span class="avatar" aria-hidden="true">IQ</span><div class="contact"><strong>InstiQuote 校園報價</strong><small>商業帳戶</small></div><span class="head-mark" aria-hidden="true">${icon('phone')}</span></div>
+<div class="chat-body" aria-label="聊天記錄" role="log" aria-live="polite"></div>
+<form class="composer"><button type="button" class="help-btn" aria-label="附件選項">${icon('plus')}</button><label class="input-wrap"><input id="message" type="text" aria-label="輸入示範訊息" autocomplete="off" maxlength="500"><span class="sticker-icon" aria-hidden="true">${icon('sticker')}</span></label><span class="composer-camera" aria-hidden="true">${icon('camera')}</span><button class="send-btn" type="submit" aria-label="傳送訊息">${icon('mic')}</button></form>
+<div class="home-indicator" aria-hidden="true"></div>
+<div class="portal-layer" role="dialog" aria-modal="true" aria-label="InstiQuote 安全頁示範" hidden><header class="portal-bar"><button class="portal-close" type="button">完成</button><strong>${icon('lock')} InstiQuote 校方專頁</strong></header><div class="portal-content"></div></div>
+<div class="role-menu" role="dialog" aria-modal="true" aria-label="示範選單" hidden><div class="role-menu-inner"></div></div></div>`;
+  }
+  function message(text,{out=false,time='09:41'}={}) {
+    const node=create('div','msg '+(out?'out':'in'));
+    node.append(create('span','msg-text',text));
+    const footer=create('span','msg-meta',time);
+    if(out){const ticks=create('span','ticks');ticks.innerHTML=icon('checks');ticks.setAttribute('aria-label','已讀');footer.append(ticks);}
+    node.append(footer);return node;
+  }
+  function action(label,{portal=false}={}) {
+    const button=create('button','chat-action');button.type='button';
+    button.innerHTML=icon(portal?'external':'reply');button.append(create('span','',label));return button;
+  }
+  window.WAFrame={create,icon,shell,message,action};
+})();
+
+const SIM = {
+  "teacher": {
+    "label": "校方老師",
+    "initial": "start",
+    "states": {
+      "start": {
+        "messages": [
+          {"text":"你好，想幫學校搵服務公司報價。","from":"me"},
+          {
+            "text": "你好，我係 InstiQuote 詢價助手。想搵咩服務？你可以用平時同供應商講嘢嘅方式話我知。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "想辦小六升中面試班",
+            "next": "ask"
+          },
+          {
+            "label": "查詢現有個案",
+            "next": "lookup"
+          },
+          {
+            "label": "轉人工",
+            "next": "human"
+          }
+        ]
+      },
+      "ask": {
+        "messages": [
+          {
+            "text": "想幫你寫清楚需求，等各間按相同條件報價。有冇上課日期同時段？每節幾耐、同時要幾位導師？",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "8 節，每節 2 小時、3 位導師",
+            "next": "dates"
+          },
+          {
+            "label": "有部分資料未定",
+            "next": "unknown"
+          },
+          {
+            "label": "轉人工",
+            "next": "human"
+          }
+        ]
+      },
+      "unknown": {
+        "messages": [
+          {
+            "text": "可以先存為草稿。請列出已知時段，未確定嘅項目先標「待校方確認」。正式規格未確認之前，平台唔會派單。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "已有時間表，繼續",
+            "next": "dates"
+          },
+          {
+            "label": "稍後再填",
+            "next": "parked"
+          }
+        ]
+      },
+      "parked": {
+        "messages": [
+          {
+            "text": "呢個對話保留喺草稿階段。你返嚟可以繼續補資料。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "繼續草稿",
+            "next": "dates"
+          }
+        ]
+      },
+      "dates": {
+        "messages": [
+          {
+            "text": "明白，8 節，每節 2 小時，每節同時要 3 位導師。請在校方頁提交正式時間表，填低教材、交通費要點列。我之後會將正式版帶返呢個私人對話，俾你最後確認。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "提交正式課程表",
+            "portal": "formal",
+            "next": "key"
+          }
+        ]
+      },
+      "key": {
+        "messages": [
+          {
+            "text": "已收到 IQ-1203 正式需求草稿。要用密封報價，請到校方頁為呢宗單產生及備份開標私鑰，保存在校方裝置。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "備份校方開標私鑰",
+            "portal": "backup",
+            "next": "confirm"
+          }
+        ]
+      },
+      "confirm": {
+        "messages": [
+          {
+            "text": "請核對 IQ-1203 的最新正式摘要。小六升中面試班，2027 年 1 月 5、7、12、14、19、21、26、28 日，每節 10:00–12:00，共 3 位導師同時上課。",
+            "from": "bot"
+          },
+          {
+            "text": "請分列教材、必收交通費及全期總額。截標係 12 月 3 日 17:00（香港時間）。確認後，系統會按校方適用規則，自動揀 5 間合資格公司並逐間發通知。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "確認此版本",
+            "next": "assigned"
+          },
+          {
+            "label": "修改正式需求",
+            "next": "edit"
+          },
+          {
+            "label": "轉人工",
+            "next": "human"
+          }
+        ]
+      },
+      "edit": {
+        "messages":[{"text":"可以。打開校方專頁修改時間或人手，儲存後我會把新版摘要發回這裏。","from":"bot"}],
+        "actions":[{"label":"修改校方正式需求","portal":"formal","next":"confirm"}]
+      },
+      "assigned": {
+        "messages": [
+          {
+            "text": "IQ-1203 已確認。系統已分配首輪 5 個名額，並排程逐間發送 WhatsApp 私訊。你唔使逐間揀公司或自己發連結。已派發同已交報價會分開顯示。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "查看派單進度",
+            "next": "progress"
+          },
+          {
+            "label": "我想知道點揀五間",
+            "next": "fair"
+          }
+        ]
+      },
+      "fair": {
+        "messages": [
+          {
+            "text": "本次先核對課程、地區、時段、導師人手及適用資格。根據試行規則，四席綜合已核實評分、準時紀錄及近期獲派機會，一席畀合資格而近期較少獲派嘅公司輪候。每間公司獨立報價，最終由校方決定採購。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "查看派單進度",
+            "next": "progress"
+          },
+          {
+            "label": "轉人工",
+            "next": "human"
+          }
+        ]
+      },
+      "lookup": {
+        "messages": [
+          {
+            "text": "示範帳號有一宗已確認的詢價 IQ-1203「小六升中面試班」。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "查看 IQ-1203 進度",
+            "next": "progress"
+          }
+        ]
+      },
+      "progress": {
+        "messages": [
+          {
+            "text": "示範時間來到 12 月 3 日 14:45。現有 5 個名額；丁拒接，己已按候補次序補上，累計通知 6 間。已收 3 份密封報價，仲有 2 間未交。金額要截標後先由校方開啟。",
+            "from": "bot"
+          },
+          {
+            "text": "個案頁有 1 項共同澄清要校方處理。請到項目頁核對其他人可以睇到嘅正式答覆。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "查看及發布共同答覆",
+            "portal": "question",
+            "next": "answered"
+          },
+          {
+            "label": "示範到截標時間",
+            "next": "cutoff"
+          },
+          {
+            "label": "轉人工",
+            "next": "human"
+          }
+        ]
+      },
+      "answered": {
+        "messages": [
+          {
+            "text": "校方發布的正式答覆已保存在項目頁。平台會通知當前參與公司前往查看；本案補位公司亦可見同一版本。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "示範到截標時間",
+            "next": "cutoff"
+          },
+          {
+            "label": "查看派單進度",
+            "next": "progress"
+          }
+        ]
+      },
+      "cutoff": {
+        "messages": [
+          {
+            "text": "12 月 3 日 17:00，IQ-1203 已截標。五個名額中實收三份密文。請登入校方頁，在自己裝置揀返本宗私鑰開標。私鑰唔使傳畀我。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "到校方頁開標",
+            "portal": "open",
+            "next": "opened"
+          }
+        ]
+      },
+      "opened": {
+        "messages": [
+          {
+            "text": "你可以在校方頁核對各公司原件、交通及教材費，再按校本程序審批。工作台會記錄領取密文及裝置回報成功解密的時間。報價金額不會出現在呢個通知。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "有疑問，聯絡客服",
+            "next": "human"
+          }
+        ]
+      },
+      "human": {
+        "messages": [
+          {
+            "text": "可以。請在服務個案選擇問題類型，附上詢價編號同錯誤情況。請保留私鑰及報價原件在自己裝置。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "建立客服個案",
+            "portal": "case",
+            "next": "ticket"
+          }
+        ]
+      },
+      "ticket": {
+        "messages": [
+          {
+            "text": "客服個案已建立。客服可根據授權查看收件、通知或帳號狀態，再喺一對一對話回覆你。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "返回詢價進度",
+            "next": "progress"
+          }
+        ]
+      }
+    }
+  },
+  "supplier": {
+    "label": "供應商",
+    "initial": "start",
+    "states": {
+      "start": {
+        "messages": [
+          {
+            "text": "你有一宗新的服務配對 IQ-1203。請於 12 月 1 日中午 12:00 前查看配對資料並回覆能否承接。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "查看本公司專屬配對",
+            "next": "match"
+          }
+        ]
+      },
+      "match": {
+        "messages": [
+          {
+            "text": "本宗示範服務係小六升中面試班，8 節，每節 2 小時，同時要 3 位導師。正式課程要求以本公司獲授權查看的項目頁為準。可以安排導師嗎？",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "接受並準備報價",
+            "next": "accepted"
+          },
+          {
+            "label": "未能承接，釋放名額",
+            "next": "declined"
+          },
+          {
+            "label": "轉人工",
+            "next": "human"
+          }
+        ]
+      },
+      "accepted": {
+        "messages": [
+          {
+            "text": "已記錄接受配對。交件截止係 12 月 3 日 17:00。你可以喺項目頁提正式問題，或者直接用自己公司的 PDF 加密交件。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "我有問題想問校方",
+            "next": "ask"
+          },
+          {
+            "label": "安全提交報價 PDF",
+            "portal": "submit",
+            "next": "receipt"
+          },
+          {
+            "label": "交件出現問題",
+            "next": "human"
+          }
+        ]
+      },
+      "declined": {
+        "messages": [
+          {
+            "text": "已記錄拒接，呢個名額會按預定次序補位。你唔需要代搵下一間公司。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "了解今次配對原因",
+            "next": "reason"
+          },
+          {
+            "label": "聯絡客服",
+            "next": "human"
+          }
+        ]
+      },
+      "reason": {
+        "messages": [
+          {
+            "text": "公司可在自己的配對紀錄查看匹配科目、時間及資格；如資料過時，可提交更正或申請覆核。其他公司的個案及價格保持保密。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "申請覆核",
+            "portal": "case",
+            "next": "ticket"
+          }
+        ]
+      },
+      "ask": {
+        "messages": [
+          {
+            "text": "如果要校方正式回覆，例如「必收交通費係咪要計入全期總額？」請在 IQ-1203 問題頁提交。請勿放入本公司報價金額或私有方案。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "在項目頁提問",
+            "portal": "question",
+            "next": "asked"
+          }
+        ]
+      },
+      "asked": {
+        "messages": [
+          {
+            "text": "已記錄項目頁問題。平台可將同義的共同問題合併，由校方核對並發布答案。你可以繼續準備報價。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "查看答覆通知示範",
+            "next": "answer"
+          },
+          {
+            "label": "安全提交報價 PDF",
+            "portal": "submit",
+            "next": "receipt"
+          }
+        ]
+      },
+      "answer": {
+        "messages": [
+          {
+            "text": "IQ-1203 的正式澄清已更新。請查看項目頁的最新說明，再按該版本提交。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "查看答覆並準備交件",
+            "next": "ready"
+          }
+        ]
+      },
+      "ready": {
+        "messages": [
+          {
+            "text": "示範項目頁列明：必收交通費計入全期總額，請另行列明。準備好後，用本公司的專屬交件頁揀 PDF。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "安全提交報價 PDF",
+            "portal": "submit",
+            "next": "receipt"
+          }
+        ]
+      },
+      "receipt": {
+        "messages": [
+          {
+            "text": "已收到本公司的密封報價，請在交件頁查看收據及時間。截標前可重新加密提交修訂版，仍計作一間公司；截標後停止交件。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "提交修訂版",
+            "portal": "submit",
+            "next": "revised"
+          },
+          {
+            "label": "點確認交咗？",
+            "next": "check"
+          },
+          {
+            "label": "轉人工",
+            "next": "human"
+          }
+        ]
+      },
+      "revised": {
+        "messages": [
+          {
+            "text": "已更新收據。截止時校方可領取你公司最後一次成功提交的版本。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "點確認交咗？",
+            "next": "check"
+          }
+        ]
+      },
+      "check": {
+        "messages": [
+          {
+            "text": "請以專屬交件頁顯示的收件時間和成功收據為準。如果只係選咗檔案，而冇見到成功收據，請在截標前核對交件狀態。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "需要客服查收件狀態",
+            "next": "human"
+          }
+        ]
+      },
+      "human": {
+        "messages": [
+          {
+            "text": "請提供 IQ-1203、錯誤提示同發生時間。客服可以查收件狀態。請勿將正式報價 PDF 直接附喺 WhatsApp。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "建立客服個案",
+            "portal": "case",
+            "next": "ticket"
+          }
+        ]
+      },
+      "ticket": {
+        "messages": [
+          {
+            "text": "客服已收到個案，會按交件期限及影響程度跟進。如已過截止，客服會保留事實紀錄並向校方反映。",
+            "from": "bot"
+          }
+        ],
+        "actions": []
+      }
+    }
+  },
+  "support": {
+    "label": "客服跟進",
+    "initial": "start",
+    "states": {
+      "start": {
+        "messages": [
+          {
+            "text": "你好，呢度係 InstiQuote 客服示範。你遇到邊類問題？",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "交件後冇見到收據",
+            "next": "delivery"
+          },
+          {
+            "label": "校方私鑰開唔到",
+            "next": "key"
+          },
+          {
+            "label": "對派單或評分有疑問",
+            "next": "review"
+          }
+        ]
+      },
+      "delivery": {
+        "messages": [
+          {
+            "text": "想先核對清楚，你係咪已按「加密並交件」？請告訴我詢價編號、出錯時間及錯誤提示。唔需要交 PDF 畀客服。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "IQ-1203，一直顯示上傳中",
+            "next": "trace"
+          },
+          {
+            "label": "已見到成功收據",
+            "next": "resolved"
+          }
+        ]
+      },
+      "trace": {
+        "messages": [
+          {
+            "text": "客服會先查伺服器收件時間。若系統已有收據，會請你重新整理查看；若未成功收妥且仍在期限內，會協助你用原連結重試。即使 WhatsApp 有已讀標記，也不能代替交件收據。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "開啟交件支援工單",
+            "portal": "case",
+            "next": "ticket"
+          },
+          {
+            "label": "已恢復，確認結案",
+            "next": "resolved"
+          }
+        ]
+      },
+      "key": {
+        "messages": [
+          {
+            "text": "請確認使用建立本宗詢價的校方帳號，再在開標頁選取當時備份的私鑰 JSON。客服不會索取私鑰。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "我揀錯另一宗私鑰",
+            "next": "wrong"
+          },
+          {
+            "label": "所有私鑰副本已遺失",
+            "next": "lost"
+          }
+        ]
+      },
+      "wrong": {
+        "messages": [
+          {
+            "text": "你可以喺校方裝置重新揀正確私鑰。匹配成功後，先會顯示解密下載選項。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "校方已自行開啟，確認結案",
+            "next": "resolved"
+          },
+          {
+            "label": "仍需協助",
+            "portal": "case",
+            "next": "ticket"
+          }
+        ]
+      },
+      "lost": {
+        "messages": [
+          {
+            "text": "請檢查校方受控的備份位置。若全部副本都遺失，平台亦無法解密原件；客服可記錄情況，交校方按程序決定是否另行收件。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "登記個案",
+            "portal": "case",
+            "next": "ticket"
+          }
+        ]
+      },
+      "review": {
+        "messages": [
+          {
+            "text": "想覆核自己公司的配對或評分，可提交個案編號、爭議項目同理據。我哋會核實當時規則、公司資料或評分來源；如涉及關聯公司，個案交由無利益衝突的人員覆核。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "提交本公司的覆核",
+            "portal": "case",
+            "next": "reviewed"
+          },
+          {
+            "label": "先了解處理流程",
+            "next": "reviewsteps"
+          }
+        ]
+      },
+      "reviewsteps": {
+        "messages": [
+          {
+            "text": "首先核對你公司所用的需求及評分版本，其後記錄獨立覆核的證據、理由和決定，最後私下通知你公司。其他供應商的報價金額及文件不會開放。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "提交覆核個案",
+            "portal": "case",
+            "next": "reviewed"
+          }
+        ]
+      },
+      "reviewed": {
+        "messages": [
+          {
+            "text": "已交獨立覆核。客服可跟進處理進度，結果會私下通知申請人。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "返回客服選單",
+            "next": "start"
+          }
+        ]
+      },
+      "ticket": {
+        "messages": [
+          {
+            "text": "已建立支援個案。待客服核實後，會通知你下一步。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "返回客服選單",
+            "next": "start"
+          }
+        ]
+      },
+      "resolved": {
+        "messages": [
+          {
+            "text": "已記錄問題解決。如稍後要再跟進，可以帶個案編號返嚟。",
+            "from": "bot"
+          }
+        ],
+        "actions": [
+          {
+            "label": "返回客服選單",
+            "next": "start"
+          }
+        ]
+      }
+    }
+  }
+};
+
+
+(() => {
+  function element(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function button(text, className, listener) {
+    const node = element('button', className, text);
+    node.type = 'button';
+    node.addEventListener('click', listener);
+    return node;
+  }
+
+  function addField(parent, id, label, input) {
+    const field = element('div', 'field');
+    const caption = element('label', '', label);
+    caption.htmlFor = id;
+    input.id = id;
+    field.append(caption, input);
+    parent.append(field);
+    return input;
+  }
+
+  function numberField(parent, name, label, value, max, step = 1) {
+    const input = element('input');
+    Object.assign(input, { type: 'number', min: String(step), max: String(max), step: String(step), value: String(value), required: true });
+    return addField(parent, 'sim-' + name, label, input);
+  }
+
+  function textField(parent, name, label, value, placeholder, required = false) {
+    const input = element('textarea');
+    Object.assign(input, { rows: 2, maxLength: 350, value: value || '', placeholder, required });
+    return addField(parent, 'sim-' + name, label, input);
+  }
+
+  function submitButton(form, text, handler) {
+    const save = element('button', 'portal-cta', text);
+    save.type = 'submit';
+    form.append(save);
+    form.onsubmit = event => {
+      event.preventDefault();
+      handler();
+    };
+    return save;
+  }
+
+  function scheduleFor(sessions, hours) {
+    const byMonth = new Map();
+    const date = new Date(Date.UTC(2027, 0, 5));
+    for (let index = 0; index < sessions; index++) {
+      const month = date.getUTCMonth() + 1;
+      if (!byMonth.has(month)) byMonth.set(month, []);
+      byMonth.get(month).push(date.getUTCDate());
+      date.setUTCDate(date.getUTCDate() + (date.getUTCDay() === 2 ? 2 : 5));
+    }
+    const dates = Array.from(byMonth, ([month, days]) => month + ' 月 ' + days.join('、') + ' 日').join('，');
+    const endMinutes = 600 + Math.round(hours * 60);
+    const end = String(Math.floor(endMinutes / 60)).padStart(2, '0') + ':' + String(endMinutes % 60).padStart(2, '0');
+    return '2027 年 ' + dates + '，每節 10:00–' + end;
+  }
+
+  window.renderSimPortal = function renderSimPortal({ type, role, data, container, complete, cancel }) {
+    container.replaceChildren();
+    container.scrollTop = 0;
+    const head = (title, lead) => {
+      container.append(element('div', 'eyebrow', 'IQ-1203 · 小六升中面試班'), element('h2', '', title), element('p', 'portal-lead', lead));
+    };
+    const note = (text, className = 'portal-info') => {
+      const block = element('p', className, text);
+      container.append(block);
+      return block;
+    };
+    const makeForm = () => {
+      const form = element('form');
+      const fields = element('div', 'fields');
+      form.append(fields);
+      container.append(form);
+      return { form, fields };
+    };
+
+    if (type === 'formal' && role === 'teacher') {
+      head('核對正式課程表', '請核對供應商將會收到的資料。儲存後，回到 WhatsApp 查閱最新摘要，再確認派單。');
+      const { form, fields } = makeForm();
+      const tutors = numberField(fields, 'tutors', '每節同時上課的導師人數', data.tutors ?? 3, 30);
+      const sessions = numberField(fields, 'sessions', '全期節數', data.sessions ?? 8, 32);
+      const hours = numberField(fields, 'hours', '每節時數', data.hours ?? 2, 8, 0.5);
+      const schedule = element('p', 'portal-info');
+      schedule.setAttribute('aria-live', 'polite');
+      fields.append(schedule);
+      function updateSchedule() {
+        schedule.textContent = sessions.validity.valid && hours.validity.valid
+          ? '上課安排　' + scheduleFor(sessions.valueAsNumber, hours.valueAsNumber)
+          : '填妥節數及時數後會顯示上課日期。';
+      }
+      sessions.addEventListener('input', updateSchedule);
+      hours.addEventListener('input', updateSchedule);
+      updateSchedule();
+      fields.append(element('div', 'portal-info', '報價表須分列教材、必收交通費及全期總額。截標時間為 12 月 3 日 17:00（香港時間）。'));
+      const fees = textField(fields, 'fees', '其他收費要求（選填）', data.fees, '例如：請列明每名學生的教材費。');
+      submitButton(form, '儲存正式需求，返回對話', () => {
+        const next = { tutors: tutors.valueAsNumber, sessions: sessions.valueAsNumber, hours: hours.valueAsNumber, fees: fees.value.trim() };
+        const changed = Object.entries(next).some(([key, value]) => data[key] !== value);
+        const previous = Number(data.version) || 1;
+        Object.assign(data, next, {
+          schedule: scheduleFor(next.sessions, next.hours),
+          version: previous + (data.formalSaved && changed ? 1 : 0),
+          formalSaved: true
+        });
+        complete();
+      });
+      return;
+    }
+
+    if (type === 'backup' && role === 'teacher') {
+      head('備份校方開標私鑰', '正式服務會讓校方把開標私鑰保存在自己的裝置。這裏可以下載示範備份，試走一次保存流程。');
+      note('示範檔不能開標。檔案只含示範標記及詢價編號。');
+      let downloaded = false;
+      const status = element('p', 'portal-status', '請先下載示範檔。');
+      status.setAttribute('role', 'status');
+      const acknowledge = element('input');
+      acknowledge.type = 'checkbox';
+      acknowledge.disabled = true;
+      const download = button('下載示範備份檔', 'portal-secondary', () => {
+        const contents = { notice: '示範檔不能開標', demo: true, inquiry: 'IQ-1203' };
+        const url = URL.createObjectURL(new Blob([JSON.stringify(contents, null, 2)], { type: 'application/json' }));
+        const link = element('a');
+        link.download = 'IQ-1203-示範備份-不能開標.json';
+        link.href = url;
+        container.append(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+        downloaded = true;
+        acknowledge.disabled = false;
+        status.textContent = '已要求瀏覽器下載。請在「下載項目」或檔案 App 找到示範檔，再勾選確認。';
+      });
+      const label = element('label', 'field');
+      label.style.display = 'block';
+      label.append(acknowledge, document.createTextNode(' 我已找到剛下載的示範備份檔。'));
+      const done = button('已保存，返回 WhatsApp', 'portal-cta', () => {
+        if (!downloaded || !acknowledge.checked) return;
+        data.backupAcknowledged = true;
+        complete();
+      });
+      done.disabled = true;
+      acknowledge.onchange = () => { done.disabled = !downloaded || !acknowledge.checked; };
+      container.append(download, status, label, done);
+      return;
+    }
+
+    if (type === 'submit' && role === 'supplier') {
+      const revision = (Number(data.submissionVersion) || 0) + 1;
+      head(revision === 1 ? '提交本公司的示範報價' : '交回本公司的修訂版', '以下使用內置樣本模擬供應商裝置封存報價和收取回條。');
+      note('樣本 PDF　小六升中面試班報價單.pdf');
+      note('版本 ' + revision + '　｜　收件對象：IQ-1203 校方開標人員' + (revision > 1 ? '。確認後以上述修訂版作準，原有收件紀錄保留。' : '。'));
+      container.append(button('確認並提交示範報價', 'portal-cta', () => {
+        data.submissionVersion = revision;
+        complete();
+      }));
+      return;
+    }
+
+    if (type === 'open' && role === 'teacher') {
+      head('在校方裝置開標', '示範時間已過 12 月 3 日 17:00。校方收到 3 份報價，可以在這個頁面查看樣本明細。');
+      note('已交　甲、乙、己　｜　未交　丙、戊');
+      note('這次使用內置示範資料，毋須選取真正的校方私鑰。');
+      container.append(button('在本機開啟示範報價', 'portal-cta', () => {
+        container.replaceChildren();
+        container.scrollTop = 0;
+        head('比較 3 份示範報價', '以下按全期應付總額排列。必收交通費已計入，供校方按採購程序評核。');
+        note('甲公司　HK$24,800｜全期總額，已包括交通費。', 'portal-status');
+        note('乙公司　HK$25,600｜課程 HK$24,000 ＋ 必收交通費 HK$1,600。');
+        note('己公司　HK$26,400｜全期總額，已包括交通費。');
+        container.append(button('完成查看，返回對話', 'portal-cta', () => { data.demoOpened = true; complete(); }));
+      }));
+      return;
+    }
+
+    if (type === 'question' && (role === 'teacher' || role === 'supplier')) {
+      const teacher = role === 'teacher';
+      head(teacher ? '發布校方共同答覆' : '送交正式問題', teacher
+        ? '發布後，所有獲派公司及其後補位的公司，都可在項目頁看到同一則答覆。'
+        : '只在此填寫希望校方正式澄清的要求。校方可把適用於各公司的共同答覆發布在項目頁。');
+      if (teacher) note('共同問題　必收交通費是否須計入全期總額？');
+      const { form, fields } = makeForm();
+      const field = teacher ? 'publishedAnswer' : 'supplierQuestion';
+      const preset = teacher ? '必收交通費須計入全期總額，並另行列明金額。' : '必收交通費是否須計入全期總額？';
+      const body = textField(fields, 'question', teacher ? '供應商會看到的答覆' : '給校方的問題', data[field] || preset, '', true);
+      submitButton(form, teacher ? '確認發布共同答覆' : '確認送交校方', () => {
+        if (!body.value.trim()) { body.setCustomValidity('請填寫內容。'); body.reportValidity(); return; }
+        data[field] = body.value.trim();
+        complete();
+      });
+      body.oninput = () => body.setCustomValidity('');
+      return;
+    }
+
+    if (type === 'case') {
+      head('建立客服個案', '請用個案編號及問題類型交代情況。示範個案只會留在這次模擬。');
+      const { form, fields } = makeForm();
+      const select = element('select');
+      ['交件或收件狀態', '校方開標或備份', '派單或評分覆核', '其他查詢'].forEach(value => select.append(element('option', '', value)));
+      addField(fields, 'sim-case-type', '問題類型', select);
+      const details = textField(fields, 'case-note', '補充說明（選填）', '', '例如：重新開啟專頁後，仍未看到收件紀錄。');
+      submitButton(form, '建立示範客服個案', () => {
+        const serial = (Number(data.caseCount) || 0) + 1;
+        data.caseCount = serial;
+        data.lastTicket = { id: 'IQ-1203-S' + String(serial).padStart(2, '0'), category: select.value, details: details.value.trim() };
+        complete();
+      });
+      return;
+    }
+
+    head('返回目前角色', '這個頁面只供該宗詢價的指定角色使用。');
+    container.append(button('返回對話', 'portal-secondary', cancel));
+  };
+})();
+
+(() => {
+  'use strict';
+  const {create,icon,shell,message,action:actionButton}=window.WAFrame;
+  const $=selector=>document.querySelector(selector);
+  const scenarios={teacher:['老師','整理需求、保存私鑰、確認派單','school'],supplier:['供應商','接受配對、提問、提交報價','supplier'],support:['客服','查交件、私鑰及評分問題','support']};
+  const sessions=new Map();
+  let role, activePortal,focusReturn, sheetReturn;
+  $('.device-area').insertAdjacentHTML('afterbegin',shell());
+  const chat=$('.chat-body'), phone=$('.phone'), menu=$('.role-menu'), portal=$('.portal-layer');
+  const input=$('#message'), send=$('.send-btn');
+  const nodes=(selector)=>Array.from(document.querySelectorAll(selector));
+  const get=()=>sessions.get(role);
+  const hashRole=()=>location.hash.slice(1).split('/');
+  function dayTime(state, fallback) {
+    if(state==='cutoff'||state==='opened') return ['12月3日 星期四','17:00'];
+    if(['progress','answered'].includes(state)) return ['12月3日 星期四','14:45'];
+    return fallback;
+  }
+  function start(which,initial) {
+    const selected=SIM[which].states[initial]?initial:SIM[which].initial;
+    const session={id:selected,log:[],serial:0,data:{sessions:8,hours:2,tutors:3,fees:'請分列教材、必收交通費及全期總額。',version:1},day:'11月30日 星期一',time:'09:41',draft:''};
+    sessions.set(which,session);
+    if(initial==='confirm'&&which==='teacher'){
+      session.data.formalSaved=true;
+      session.data.backupAcknowledged=true;
+      session.log.push({from:'me',text:'想辦小六升中面試班，一共 8 節。',time:'09:38',day:session.day},
+        {from:'bot',text:'收到。正式時間表可以喺校方專頁提交，開標私鑰亦喺校方裝置保存。',time:'09:39',day:session.day});
+    }
+    addState(which,selected);
+  }
+  function addState(which,id){
+    const session=sessions.get(which),state=SIM[which].states[id];
+    session.id=id;session.serial++;session.pending=null;
+    [session.day,session.time]=dayTime(id,[session.day,session.time]);
+    let messages=state.messages;
+    if(which==='teacher'&&id==='confirm'){
+      const d=session.data,dates=d.schedule||'2027 年 1 月 5、7、12、14、19、21、26、28 日，每節 10:00–12:00';
+      messages=[{text:'IQ-1203 · 正式版 v'+d.version+'\n小六升中面試班\n'+dates+'\n全期 '+d.sessions+' 節，每節 '+d.hours+' 小時，同時 '+d.tutors+' 位導師。'},
+        {text:(d.fees||'請分列教材、必收交通費及全期總額。')+'\n12 月 3 日下午 5 時截標。確認後，平台會自動配對並逐間通知 5 間供應商。'}];
+    }
+    messages.forEach((entry,index)=>session.log.push({from:entry.from||'bot',text:entry.text,time:session.time,day:session.day,
+      actions:index===messages.length-1?state.actions:null,serial:session.serial}));
+  }
+  function includeText(text,from='me'){
+    const s=get();s.log.push({text,from,day:s.day,time:s.time});
+  }
+  function choose(choice,{typed=''}={}){
+    const s=get();
+    if(choice.portal){
+      if(s.pending||SIM[role].states[s.id].actions.length===1){
+        showPortal(choice);return;
+      }
+      includeText(typed||choice.label);
+      s.serial++;
+      s.pending=choice;
+      s.log.push({text:'請按下方連結到 InstiQuote 專頁繼續。',from:'bot',day:s.day,time:s.time,serial:s.serial,actions:[choice]});
+    }else{
+      includeText(typed||choice.label);
+      addState(role,choice.next);
+    }
+    render();
+  }
+  function showPortal(choice){
+    focusReturn=document.activeElement;
+    activePortal=choice;
+    portal.hidden=false;
+    const container=$('.portal-content');container.replaceChildren();container.scrollTop=0;
+    $('.portal-bar strong').innerHTML=icon('lock')+' InstiQuote 安全專頁';
+    window.renderSimPortal({type:choice.portal,role,data:get().data,container,
+      complete:()=>{if(activePortal!==choice)return;hidePortal(false);addState(role,choice.next);render();focusActive();},
+      cancel:()=>hidePortal(true)});
+    $('.portal-close').focus({preventScroll:true});
+  }
+  function hidePortal(restore=true){portal.hidden=true;activePortal=null;if(restore&&focusReturn?.isConnected)focusReturn.focus({preventScroll:true});}
+  $('.portal-close').onclick=()=>hidePortal();
+  function focusActive(){(chat.querySelector('.chat-action:not(:disabled)')||input).focus({preventScroll:true});}
+  function scrollEnd(){chat.scrollTop=chat.scrollHeight;requestAnimationFrame(()=>{chat.scrollTop=chat.scrollHeight;});}
+  function updateInput(){
+    const blank=!input.value.trim();send.classList.toggle('blank',blank);
+    send.innerHTML=icon(blank?'mic':'send');send.setAttribute('aria-label',blank?'語音示範說明':'傳送訊息');
+    $('.composer-camera').hidden=!blank;
+  }
+  function render(){
+    const s=get();chat.replaceChildren();
+    $('.clock-text').textContent=s.time.replace(/^0/,'');
+    $('.contact strong').textContent=role==='support'?'InstiQuote 客服':'InstiQuote 校園報價';
+    let lastDay='';
+    for(const e of s.log){
+      if(e.day!==lastDay){chat.append(create('div','day',e.day));lastDay=e.day;}
+      const bubble=message(e.text,{out:e.from==='me',time:e.time});chat.append(bubble);
+      if(e.actions?.length){
+        bubble.classList.add('with-actions');
+        const buttons=create('div','actions bubble-actions');
+        e.actions.forEach(choice=>{
+          const link=Boolean(choice.portal&&e.actions.length===1), b=actionButton(choice.label,{portal:link});
+          b.disabled=e.serial!==s.serial;
+          b.onclick=()=>{if(e.serial===get().serial)choose(choice);};buttons.append(b);
+        });
+        chat.append(buttons);
+      }
+    }
+    nodes('.role[data-role]').forEach(b=>{b.classList.toggle('active',b.dataset.role===role);b.setAttribute('aria-pressed',String(b.dataset.role===role));});
+    input.value=s.draft||'';updateInput();scrollEnd();
+  }
+  function switchRole(which,initial,reset=false){
+    if(!Object.hasOwn(SIM,which)) which='teacher';
+    if(role&&get())get().draft=input.value;
+    role=which;menu.hidden=true;hidePortal(false);
+    if(reset||!sessions.has(role)||initial) start(role,initial);
+    render();
+  }
+  function roleList(){
+    const list=create('div','role-list');
+    for(const [id,[label,caption,symbol]] of Object.entries(scenarios)){
+      const b=create('button','role');b.type='button';b.dataset.role=id;
+      b.innerHTML='<span class="role-icon">'+icon(symbol)+'</span><span class="role-copy"><strong>'+label+'</strong><small>'+caption+'</small></span><span class="chev">'+icon('chevron')+'</span>';
+      b.classList.toggle('active',id===role);
+      b.onclick=()=>{history.replaceState(null,'','#'+id);switchRole(id);};list.append(b);
+    }return list;
+  }
+  function openMenu(kind){
+    sheetReturn=document.activeElement;
+    const box=$('.role-menu-inner');box.replaceChildren();
+    if(kind==='roles'){
+      box.append(create('h2','','示範對話'),roleList());
+      const reset=create('button','portal-secondary','重新開始這個角色');reset.onclick=()=>{history.replaceState(null,'','#'+role);switchRole(role,undefined,true);};box.append(reset);
+      const back=create('a','quick-preview','返回全流程圖解');back.href='InstiQuote-B-WhatsApp自動派單.html';box.append(back);
+    }else{
+      box.append(create('h2','',kind==='mic'?'語音訊息':'附件'),create('p','portal-lead',kind==='mic'?'此模擬器可使用文字及訊息按鈕。':'正式課程文件及報價經專屬頁面提交。你可以使用對話中的示範連結體驗。'));
+    }
+    const close=create('button','portal-secondary','關閉');close.onclick=closeMenu;box.append(close);
+    menu.hidden=false;close.focus();
+  }
+  function closeMenu(){menu.hidden=true;if(sheetReturn?.isConnected)sheetReturn.focus({preventScroll:true});}
+  $('.mobile-roles').onclick=()=>openMenu('roles');$('.help-btn').onclick=()=>openMenu('files');
+  menu.addEventListener('click',e=>{if(e.target===menu)closeMenu();});
+  input.addEventListener('input',()=>{get().draft=input.value;updateInput();});
+  phone.querySelector('.composer').addEventListener('submit',e=>{
+    e.preventDefault();const value=input.value.trim();if(!value){openMenu('mic');return;}
+    const s=get();s.draft='';input.value='';updateInput();
+    const current=s.pending?[s.pending]:SIM[role].states[s.id].actions;
+    let match=current.find(a=>value.includes(a.label)||a.label===value);
+    if(!match&&role==='teacher'&&s.id==='start'&&/課程|學校|升中|面試|補習|學班|樂器|講座|詢價/.test(value))match=current.find(a=>a.next==='ask');
+    if(!match&&/真人|人工|客服/.test(value)&&role!=='support')match={label:'轉人工',next:'human'};
+    if(!match&&s.id==='ask'&&role==='teacher'&&/[83八三]/.test(value)&&/導師/.test(value))match=current.find(a=>a.next==='dates');
+    if(match){choose(match,{typed:value});return;}
+    includeText(value);
+    const options=current.map(a=>'「'+a.label+'」').join('、');
+    s.serial++;
+    s.log.push({from:'bot',text:options?'這個示範可選 '+options+'。':'這段示範已完成。可從角色選單重新開始。',actions:current,day:s.day,time:s.time,serial:s.serial});
+    render();
+  });
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'){if(!menu.hidden)closeMenu();else if(!portal.hidden)hidePortal();}
+    if(e.key==='Tab'&&(!menu.hidden||!portal.hidden)){
+      const box=menu.hidden?portal:menu,els=[...box.querySelectorAll('button:not(:disabled),a[href],input:not(:disabled),textarea,select')].filter(n=>n.getClientRects().length);
+      if(els.length&&e.shiftKey&&document.activeElement===els[0]){e.preventDefault();els.at(-1).focus();}
+      else if(els.length&&!e.shiftKey&&document.activeElement===els.at(-1)){e.preventDefault();els[0].focus();}
+    }
+  });
+  $('.role-picker').append(roleList());
+  $('.reset-btn').innerHTML=icon('reset')+' 重新開始這個角色';
+  $('.reset-btn').onclick=()=>{history.replaceState(null,'','#'+role);switchRole(role,undefined,true);};
+  $('.brand-symbol').innerHTML=icon('book');
+  function route(){const [which,initial]=hashRole();switchRole(which,initial);}
+  window.addEventListener('hashchange',route);route();
+})();
+</script></body></html>
